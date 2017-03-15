@@ -177,3 +177,24 @@ class RadioMediaShow(Show):
         else:
             self.mon.err(self,"Unknown trigger: "+ self.show_params['trigger-start-type'])
             self.end('error',"Unknown trigger: "+ self.show_params['trigger-start-type'])
+
+    def start_list(self):
+        # starts the list or any repeat having waited for trigger first.
+        self.state='playing'
+
+        # initialise track counter for the list
+        self.track_count=0
+
+        # start interval timer
+        self.interval_timer_signal = False
+        if self.interval != 0:
+            self.interval_timer=self.canvas.after(self.interval*1000,self.end_interval_timer)
+
+        #get rid of previous track in order to display the empty message
+        if self.medialist.display_length() == 0:
+            Show.base_shuffle(self)
+            Show.base_track_ready_callback(self,False)
+            Show.display_admin_message(self,self.show_params['empty-text'])
+            self.wait_for_not_empty()
+        else:
+            self.not_empty()
