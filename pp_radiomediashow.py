@@ -145,3 +145,35 @@ class RadioMediaShow(Show):
 
         # and start the first list of the show
         self.wait_for_trigger()
+
+    def wait_for_trigger(self):
+
+        # wait for trigger sets the state to waiting so that trigger events can do a start_list.
+        self.state='waiting'
+
+        self.mon.log(self,self.show_params['show-ref']+ ' '+ str(self.show_id)+ ": Waiting for trigger: "+ self.show_params['trigger-start-type'])
+
+
+        if self.show_params['trigger-start-type'] == "input":
+
+            #close the previous track to display admin message
+            Show.base_shuffle(self)
+            Show.base_track_ready_callback(self,False)
+            Show.display_admin_message(self,self.show_params['trigger-wait-text'])
+
+        elif self.show_params['trigger-start-type'] == "input-persist":
+            if self.first_list ==True:
+                #first time through track list so play the track without waiting to get to end.
+                self.first_list=False
+                self.start_list()
+            else:
+                #wait for trigger while displaying previous track
+                pass
+
+        elif self.show_params['trigger-start-type'] == "start":
+            # don't close the previous track to give seamless repeat of the show
+            self.start_list()
+
+        else:
+            self.mon.err(self,"Unknown trigger: "+ self.show_params['trigger-start-type'])
+            self.end('error',"Unknown trigger: "+ self.show_params['trigger-start-type'])
