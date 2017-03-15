@@ -1,7 +1,7 @@
 from pp_show import Show
 from pp_medialist import MediaList
 
-class RadioMediaShow(GapShow):
+class RadioMediaShow(Show):
 
     def __init__(self,
                  show_id,
@@ -16,7 +16,7 @@ class RadioMediaShow(GapShow):
 
 
         # init the common bits
-        GapShow.__init__(self,
+        Show.base__init__(self,
                          show_id,
                          show_params,
                          root,
@@ -38,7 +38,7 @@ class RadioMediaShow(GapShow):
     def play(self,end_callback,show_ready_callback, parent_kickback_signal,level,controls_list):
         # use the appropriate medialist
         self.medialist=MediaList(self.show_params['sequence'])
-        
+
         self.mon.newline(3)
         self.mon.trace(self, self.show_params['show-ref'])
 
