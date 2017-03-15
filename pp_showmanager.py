@@ -331,6 +331,7 @@ class ShowManager(object):
 from pp_menushow import MenuShow
 from pp_liveshow import LiveShow
 from pp_mediashow import MediaShow
+from pp_radiomediashow import RadioMediaShow
 from pp_hyperlinkshow import HyperlinkShow
 from pp_radiobuttonshow import RadioButtonShow
 from pp_artliveshow import ArtLiveShow
