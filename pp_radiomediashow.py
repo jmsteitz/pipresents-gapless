@@ -198,3 +198,22 @@ class RadioMediaShow(Show):
             self.wait_for_not_empty()
         else:
             self.not_empty()
+
+    def wait_for_not_empty(self):
+        if self.medialist.display_length()==0:
+            # list is empty retry after 5 secs
+            self.canvas.after(5000,self.wait_for_not_empty)
+        else:
+            Show.delete_admin_message(self)
+            self.not_empty()
+
+    def not_empty(self):
+        #get first or last track depending on direction
+        # print 'use direction for start or end of list', self.kickback_for_next_track
+        if self.kickback_for_next_track is True:
+            self.medialist.finish()
+        else:
+            self.medialist.start()
+        self.start_load_show_loop(self.medialist.selected_track())
+
+        
