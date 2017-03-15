@@ -1,4 +1,4 @@
-from pp_gapshow import GapShow
+from pp_show import Show
 from pp_medialist import MediaList
 
 class RadioMediaShow(GapShow):
@@ -28,12 +28,41 @@ class RadioMediaShow(GapShow):
                          command_callback)
 
 
-    def play(self,end_callback,show_ready_callback, direction_command,level,controls_list):
+    # def play(self,end_callback,show_ready_callback, direction_command,level,controls_list):
+    #
+    #     # use the appropriate medialist
+    #     self.medialist=MediaList(self.show_params['sequence'])
+    #
+    #     GapShow.play(self,end_callback,show_ready_callback, direction_command,level,controls_list)
 
+    def play(self,end_callback,show_ready_callback, parent_kickback_signal,level,controls_list):
         # use the appropriate medialist
         self.medialist=MediaList(self.show_params['sequence'])
+        
+        self.mon.newline(3)
+        self.mon.trace(self, self.show_params['show-ref'])
 
-        GapShow.play(self,end_callback,show_ready_callback, direction_command,level,controls_list)
+        Show.base_play(self,end_callback,show_ready_callback,parent_kickback_signal, level,controls_list)
+
+        # unpack show parameters
+
+        reason,message,self.show_timeout = Show.calculate_duration(self,self.show_params['show-timeout'])
+        if reason=='error':
+            self.mon.err(self,'ShowTimeout has bad time: '+self.show_params['show-timeout'])
+            self.end('error','ShowTimeout has bad time: '+self.show_params['show-timeout'])
+
+        self.track_count_limit = int(self.show_params['track-count-limit'])
+
+        reason,message,self.interval = Show.calculate_duration (self, self.show_params['interval'])
+        if reason=='error':
+            self.mon.err(self,'Interval has bad time: '+self.show_params['interval'])
+            self.end('error','Interval has bad time: '+self.show_params['interval'])
+
+        # delete eggtimer started by the parent
+        if self.previous_shower is not None:
+            self.previous_shower.delete_eggtimer()
+
+        self.start_show()
 
     def handle_input_event_this_show(self,symbol):
         # for radiobuttonshow the symbolic names are links to play tracks, also a limited number of in-track operations
