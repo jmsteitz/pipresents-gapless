@@ -33,7 +33,7 @@ class PPEditor(object):
     # ***************************************
 
     def __init__(self):
-    
+
         self.editor_issue="1.3"
 
         # get command options
@@ -41,17 +41,17 @@ class PPEditor(object):
 
         # get directory holding the code
         self.pp_dir=sys.path[0]
-            
+
         if not os.path.exists(self.pp_dir+os.sep+"pp_editor.py"):
             tkMessageBox.showwarning("Pi Presents","Bad Application Directory")
             exit()
-            
-          
+
+
         # Initialise logging
         Monitor.log_path=self.pp_dir
         self.mon=Monitor()
         self.mon.init()
-        
+
         Monitor.classes  = ['PPEditor','EditItem','Validator']
 
         Monitor.log_level = int(self.command_options['debug'])
@@ -62,7 +62,7 @@ class PPEditor(object):
 
 
         # set up the gui
- 
+
         # root is the Tkinter root widget
         self.root = Tk()
         self.root.title("Editor for Pi Presents")
@@ -91,6 +91,7 @@ class PPEditor(object):
         ptypemenu = Menu(profilemenu, tearoff=0, bg="grey", fg="black")
         ptypemenu.add_command(label='Exhibit', command = self.new_exhibit_profile)
         ptypemenu.add_command(label='Media Show', command = self.new_mediashow_profile)
+        ptypemenu.add_command(label='Radio Media Show', command = self.new_radiomediashow_profile)
         ptypemenu.add_command(label='Art Media Show', command = self.new_artmediashow_profile)
         ptypemenu.add_command(label='Menu', command = self.new_menu_profile)
         ptypemenu.add_command(label='Presentation', command = self.new_presentation_profile)
@@ -101,7 +102,7 @@ class PPEditor(object):
         ptypemenu.add_command(label='Hyperlink Show', command = self.new_hyperlinkshow_profile)
         ptypemenu.add_command(label='Blank', command = self.new_blank_profile)
         profilemenu.add_cascade(label='New from Template', menu = ptypemenu)
-        
+
         showmenu = Menu(menubar, tearoff=0, bg="grey", fg="black")
         showmenu.add_command(label='Delete', command = self.remove_show)
         showmenu.add_command(label='Edit', command = self.m_edit_show)
@@ -111,19 +112,20 @@ class PPEditor(object):
         stypemenu = Menu(showmenu, tearoff=0, bg="grey", fg="black")
         stypemenu.add_command(label='Menu', command = self.add_menushow)
         stypemenu.add_command(label='MediaShow', command = self.add_mediashow)
+        stypemenu.add_command(label='RadioMediaShow', command = self.add_radiomediashow)
         stypemenu.add_command(label='LiveShow', command = self.add_liveshow)
         stypemenu.add_command(label='HyperlinkShow', command = self.add_hyperlinkshow)
         stypemenu.add_command(label='RadioButtonShow', command = self.add_radiobuttonshow)
         stypemenu.add_command(label='ArtMediaShow', command = self.add_artmediashow)
         stypemenu.add_command(label='ArtLiveShow', command = self.add_artliveshow)
         showmenu.add_cascade(label='Add', menu = stypemenu)
-        
+
         medialistmenu = Menu(menubar, tearoff=0, bg="grey", fg="black")
         menubar.add_cascade(label='MediaList', menu = medialistmenu)
         medialistmenu.add_command(label='Add', command = self.add_medialist)
         medialistmenu.add_command(label='Delete', command = self.remove_medialist)
         medialistmenu.add_command(label='Copy To', command = self.copy_medialist)
-      
+
         trackmenu = Menu(menubar, tearoff=0, bg="grey", fg="black")
         trackmenu.add_command(label='Delete', command = self.remove_track)
         trackmenu.add_command(label='Edit', command = self.m_edit_track)
@@ -153,7 +155,7 @@ class PPEditor(object):
         toolsmenu = Menu(menubar, tearoff=0, bg="grey", fg="black")
         menubar.add_cascade(label='Tools', menu = toolsmenu)
         toolsmenu.add_command(label='Update All', command = self.update_all)
-        
+
         optionsmenu = Menu(menubar, tearoff=0, bg="grey", fg="black")
         menubar.add_cascade(label='Options', menu = optionsmenu)
         optionsmenu.add_command(label='Edit', command = self.edit_options)
@@ -162,23 +164,23 @@ class PPEditor(object):
         menubar.add_cascade(label='Help', menu = helpmenu)
         helpmenu.add_command(label='Help', command = self.show_help)
         helpmenu.add_command(label='About', command = self.about)
-         
+
         self.root.config(menu=menubar)
 
         top_frame=Frame(self.root)
         top_frame.pack(side=TOP)
         bottom_frame=Frame(self.root)
-        bottom_frame.pack(side=TOP, fill=BOTH, expand=1)        
+        bottom_frame.pack(side=TOP, fill=BOTH, expand=1)
 
         left_frame=Frame(bottom_frame, padx=5)
         left_frame.pack(side=LEFT)
         middle_frame=Frame(bottom_frame,padx=5)
-        middle_frame.pack(side=LEFT)              
+        middle_frame.pack(side=LEFT)
         right_frame=Frame(bottom_frame,padx=5,pady=10)
         right_frame.pack(side=LEFT)
         updown_frame=Frame(bottom_frame,padx=5)
         updown_frame.pack(side=LEFT)
-        
+
         tracks_title_frame=Frame(right_frame)
         tracks_title_frame.pack(side=TOP)
         tracks_label = Label(tracks_title_frame, text="Tracks in Selected Medialist")
@@ -199,13 +201,13 @@ class PPEditor(object):
         medialists_label.pack()
         medialists_frame=Frame(left_frame)
         medialists_frame.pack(side=LEFT)
-        
-        # define buttons 
+
+        # define buttons
 
         add_button = Button(middle_frame, width = 5, height = 2, text='Edit\nShow',
                             fg='black', command = self.m_edit_show, bg="light grey")
         add_button.pack(side=RIGHT)
-        
+
         add_button = Button(updown_frame, width = 5, height = 1, text='Add',
                             fg='black', command = self.add_track_from_file, bg="light grey")
         add_button.pack(side=TOP)
@@ -220,7 +222,7 @@ class PPEditor(object):
         add_button.pack(side=TOP)
 
 
-        # define display of showlist 
+        # define display of showlist
         scrollbar = Scrollbar(shows_frame, orient=VERTICAL)
         self.shows_display = Listbox(shows_frame, selectmode=SINGLE, height=12,
                                      width = 40, bg="white",activestyle=NONE,
@@ -230,7 +232,7 @@ class PPEditor(object):
         self.shows_display.pack(side=LEFT, fill=BOTH, expand=1)
         self.shows_display.bind("<ButtonRelease-1>", self.e_select_show)
 
-    
+
         # define display of medialists
         scrollbar = Scrollbar(medialists_frame, orient=VERTICAL)
         self.medialists_display = Listbox(medialists_frame, selectmode=SINGLE, height=12,
@@ -256,12 +258,12 @@ class PPEditor(object):
         # initialise editor options class and OSC config class
         self.options=Options(self.pp_dir) # creates options file in code directory if necessary
         self.osc_config=OSCConfig()
-        
-        # initialise variables      
+
+        # initialise variables
         self.init()
-        
+
         # and enter Tkinter event loop
-        self.root.mainloop()        
+        self.root.mainloop()
 
 
     # ***************************************
@@ -304,7 +306,7 @@ class PPEditor(object):
 
     def show_help (self):
         tkMessageBox.showinfo("Help","Read 'manual.pdf'")
-  
+
 
     def about (self):
         tkMessageBox.showinfo("About","Editor for Pi Presents Profiles\n"
@@ -338,14 +340,14 @@ class PPEditor(object):
         if self.req_unit_type != None:
             # print self.req_unit_type
             eosc = OSCEditor(self.root, self.osc_config_file,self.req_unit_type,'Edit OSC Configuration')
-            
+
     def delete_osc(self):
         if self.osc_config.read(self.osc_config_file) is False:
             return
         os.rename(self.osc_config_file,self.osc_config_file+'.bak')
-        
 
-    
+
+
     # **************
     # PROFILES
     # **************
@@ -359,7 +361,7 @@ class PPEditor(object):
         # dir_path="C:\Users\Ken\pp_home\pp_profiles\\ttt"
         if len(dir_path)>0:
             self.open_profile(dir_path)
-        
+
 
     def open_profile(self,dir_path):
         showlist_file = dir_path + os.sep + "pp_showlist.json"
@@ -392,7 +394,7 @@ class PPEditor(object):
         self.open_profile(to)
 
 
-        
+
     def new_exhibit_profile(self):
         profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_exhibit_1p3'
         self.new_profile(profile)
@@ -416,7 +418,11 @@ class PPEditor(object):
     def new_mediashow_profile(self):
         profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_mediashow_1p3'
         self.new_profile(profile)
-        
+
+    def new_radiomediashow_profile(self):
+        profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_radiomediashow_1p3'
+        self.new_profile(profile)
+
     def new_liveshow_profile(self):
         profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_liveshow_1p3'
         self.new_profile(profile)
@@ -424,7 +430,7 @@ class PPEditor(object):
     def new_artmediashow_profile(self):
         profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_artmediashow_1p3'
         self.new_profile(profile)
-        
+
     def new_artliveshow_profile(self):
         profile = self.pp_dir+os.sep+'pp_resources'+os.sep+'pp_templates'+os.sep + 'ppt_artliveshow_1p3'
         self.new_profile(profile)
@@ -463,9 +469,12 @@ class PPEditor(object):
         if self.current_showlist is not None:
             showlist_file = showlist_dir + os.sep + "pp_showlist.json"
             self.current_showlist.save_list(showlist_file)
-            
+
     def add_mediashow(self):
         self.add_show(PPdefinitions.new_shows['mediashow'])
+
+    def add_radiomediashow(self):
+        self.add_show(PPdefinitions.new_shows['radiomediashow'])
 
     def add_liveshow(self):
         self.add_show(PPdefinitions.new_shows['liveshow'])
@@ -481,11 +490,11 @@ class PPEditor(object):
 
     def add_artmediashow(self):
         self.add_show(PPdefinitions.new_shows['artmediashow'])
-        
+
     def add_menushow(self):
         self.add_show(PPdefinitions.new_shows['menu'])
 
-    def add_start(self):  
+    def add_start(self):
         self.add_show(PPdefinitions.new_shows['start'])
 
 
@@ -499,10 +508,10 @@ class PPEditor(object):
             if name == "":
                 tkMessageBox.showwarning("Add Show","Name is blank")
                 return
-                                         
+
             if self.current_showlist.index_of_show(name) != -1:
                 tkMessageBox.showwarning("Add Show","A Show with this name already exists")
-                return            
+                return
             copied_show=self.current_showlist.copy(default,name)
             mediafile=self.add_medialist(name)
             if mediafile != '':
@@ -511,7 +520,7 @@ class PPEditor(object):
             self.save_showlist(self.pp_profile_dir)
             self.refresh_shows_display()
 
-            
+
     def remove_show(self):
         if  self.current_showlist is not None and self.current_showlist.length()>0 and self.current_showlist.show_is_selected():
             if tkMessageBox.askokcancel("Delete Show","Delete Show"):
@@ -526,16 +535,16 @@ class PPEditor(object):
             if self.current_showlist.show(index)['show-ref'] != "start":
                 _show_refs.append(copy.deepcopy(self.current_showlist.show(index)['show-ref']))
         return _show_refs
- 
+
     def refresh_shows_display(self):
         self.shows_display.delete(0,self.shows_display.size())
         for index in range(self.current_showlist.length()):
-            self.shows_display.insert(END, self.current_showlist.show(index)['title']+"   ["+self.current_showlist.show(index)['show-ref']+"]")        
+            self.shows_display.insert(END, self.current_showlist.show(index)['title']+"   ["+self.current_showlist.show(index)['show-ref']+"]")
         if self.current_showlist.show_is_selected():
-            self.shows_display.itemconfig(self.current_showlist.selected_show_index(),fg='red')            
+            self.shows_display.itemconfig(self.current_showlist.selected_show_index(),fg='red')
             self.shows_display.see(self.current_showlist.selected_show_index())
 
-            
+
     def e_select_show(self,event):
         if self.current_showlist is not None and self.current_showlist.length()>0:
             mouse_item_index=int(event.widget.curselection()[0])
@@ -546,11 +555,11 @@ class PPEditor(object):
         if  self.current_showlist is not None and self.current_showlist.show_is_selected():
             self.add_show(self.current_showlist.selected_show())
 
-        
+
     def m_edit_show(self):
         self.edit_show(PPdefinitions.show_types,PPdefinitions.show_field_specs)
-        
-     
+
+
 
     def edit_show(self,show_types,field_specs):
         if self.current_showlist is not None and self.current_showlist.show_is_selected():
@@ -561,7 +570,7 @@ class PPEditor(object):
                 self.save_showlist(self.pp_profile_dir)
                 self.refresh_shows_display()
 
- 
+
 
     # ***************************************
     #   Medialists
@@ -588,10 +597,10 @@ class PPEditor(object):
             if name == "":
                 tkMessageBox.showwarning("Add medialist","Name is blank")
                 return ''
-            
+
         if not name.endswith(".json"):
             name=name+(".json")
-                
+
         path = self.pp_profile_dir + os.sep + name
         if os.path.exists(path) is  True:
             tkMessageBox.showwarning("Add medialist","Medialist file exists\n(%s)" % path)
@@ -606,7 +615,7 @@ class PPEditor(object):
         # append it to the list
         self.medialists.append(copy.deepcopy(name))
         # add title to medialists display
-        self.medialists_display.insert(END, name)  
+        self.medialists_display.insert(END, name)
         # and set it as the selected medialist
         self.refresh_medialists_display()
         return name
@@ -614,7 +623,7 @@ class PPEditor(object):
 
     def copy_medialist(self,to_file=None):
         if self.current_medialist is not None:
-            #from_file= self.current_medialist 
+            #from_file= self.current_medialist
             from_file= self.medialists[self.current_medialists_index]
             if to_file is None:
                 d = Edit1Dialog(self.root,"Copy Medialist","File", "")
@@ -624,7 +633,7 @@ class PPEditor(object):
                 if to_file == "":
                     tkMessageBox.showwarning("Copy medialist","Name is blank")
                     return ''
-                
+
             success_file = self.copy_medialist_file(from_file,to_file)
             if success_file =='':
                 return ''
@@ -644,12 +653,12 @@ class PPEditor(object):
     def copy_medialist_file(self,from_file,to_file):
         if not to_file.endswith(".json"):
             to_file+=(".json")
-                
+
         to_path = self.pp_profile_dir + os.sep + to_file
         if os.path.exists(to_path) is  True:
             tkMessageBox.showwarning("Copy medialist","Medialist file exists\n(%s)" % to_path)
             return ''
-        
+
         from_path= self.pp_profile_dir + os.sep + from_file
         if os.path.exists(from_path) is  False:
             tkMessageBox.showwarning("Copy medialist","Medialist file not found\n(%s)" % from_path)
@@ -678,7 +687,7 @@ class PPEditor(object):
             self.current_medialist=MediaList('ordered')
             if not self.current_medialist.open_list(self.pp_profile_dir+ os.sep + self.medialists[self.current_medialists_index],self.current_showlist.sissue()):
                 self.mon.err(self,"medialist is a different version to showlist: "+ self.medialists[self.current_medialists_index])
-                self.app_exit()        
+                self.app_exit()
             self.refresh_tracks_display()
             self.refresh_medialists_display()
 
@@ -699,12 +708,12 @@ class PPEditor(object):
         medialist_file = self.pp_profile_dir+ os.sep + basefile
         self.current_medialist.save_list(medialist_file)
 
-  
-          
+
+
     # ***************************************
     #   Tracks
     # ***************************************
-          
+
     def refresh_tracks_display(self):
         self.tracks_display.delete(0,self.tracks_display.size())
         if self.current_medialist is not None:
@@ -713,11 +722,11 @@ class PPEditor(object):
                     track_ref_string="  ["+self.current_medialist.track(index)['track-ref']+"]"
                 else:
                     track_ref_string=""
-                self.tracks_display.insert(END, self.current_medialist.track(index)['title']+track_ref_string)        
+                self.tracks_display.insert(END, self.current_medialist.track(index)['title']+track_ref_string)
             if self.current_medialist.track_is_selected():
-                self.tracks_display.itemconfig(self.current_medialist.selected_track_index(),fg='red')            
+                self.tracks_display.itemconfig(self.current_medialist.selected_track_index(),fg='red')
                 self.tracks_display.see(self.current_medialist.selected_track_index())
-            
+
     def e_select_track(self,event):
         if self.current_medialist is not None and self.current_medialist.length()>0:
             mouse_item_index=int(event.widget.curselection()[0])
@@ -727,7 +736,7 @@ class PPEditor(object):
     def m_edit_track(self):
         self.edit_track(PPdefinitions.track_types,PPdefinitions.track_field_specs)
 
-    def edit_track(self,track_types,field_specs):      
+    def edit_track(self,track_types,field_specs):
         if self.current_medialist is not None and self.current_medialist.track_is_selected():
             d=EditItem(self.root,"Edit Track",self.current_medialist.selected_track(),track_types,field_specs,
                        self.show_refs(),self.initial_media_dir,self.pp_home_dir,'track')
@@ -746,7 +755,7 @@ class PPEditor(object):
             self.current_medialist.move_down()
             self.refresh_tracks_display()
             self.save_medialist()
-        
+
     def new_track(self,fields,values):
         if self.current_medialist is not None:
             # print '\nfields ', fields
@@ -763,16 +772,16 @@ class PPEditor(object):
 
     def new_message_track(self):
         self.new_track(PPdefinitions.new_tracks['message'],None)
-            
+
     def new_video_track(self):
         self.new_track(PPdefinitions.new_tracks['video'],None)
-  
+
     def new_audio_track(self):
         self.new_track(PPdefinitions.new_tracks['audio'],None)
 
     def new_web_track(self):
         self.new_track(PPdefinitions.new_tracks['web'],None)
-        
+
     def new_image_track(self):
         self.new_track(PPdefinitions.new_tracks['image'],None)
 
@@ -781,7 +790,7 @@ class PPEditor(object):
 
     def new_menu_track(self):
         self.new_track(PPdefinitions.new_tracks['menu'],None)
- 
+
     def remove_track(self):
         if  self.current_medialist is not None and self.current_medialist.length()>0 and self.current_medialist.track_is_selected():
             if tkMessageBox.askokcancel("Delete Track","Delete Track"):
@@ -789,7 +798,7 @@ class PPEditor(object):
                 self.current_medialist.remove(index)
                 self.save_medialist()
                 self.refresh_tracks_display()
-                
+
     def add_track_from_file(self):
         if self.current_medialist is None: return
         # print "initial directory ", self.options.initial_media_dir
@@ -880,12 +889,12 @@ class PPEditor(object):
                     self.mon.log(self," Skipping Profile " + profile_file + " It is already up to date ")
         self.init()
         tkMessageBox.showwarning("Pi Presents","All profiles updated")
-            
+
     def update_profile(self):
 
         self.update_medialists()   # medialists and their tracks
         self.update_shows()         #shows in showlist, also creates menu tracks for 1.2>1.3
-        
+
 
     def update_shows(self):
         # open showlist into a list of dictionaries
@@ -909,27 +918,27 @@ class PPEditor(object):
 
                 #update the reference to the medialist
                 show['medialist']=to_file
-                
+
                 #delete show fields so they are recreated with new default content
                 del show['controls']
-                
+
                 # open the  medialist and add the menu track then populate some of its fields from the show
                 ifile  = open(self.pp_profile_dir + os.sep + to_file, 'rb')
                 tracks = json.load(ifile)['tracks']
                 ifile.close()
-                
+
                 new_track=copy.deepcopy(PPdefinitions.new_tracks['menu'])
                 tracks.append(copy.deepcopy(new_track))
 
-                # copy menu parameters from menu show to menu track and init values of some              
-                self.transfer_show_params(show,tracks,'menu-track',("entry-colour","entry-font", "entry-select-colour", 
+                # copy menu parameters from menu show to menu track and init values of some
+                self.transfer_show_params(show,tracks,'menu-track',("entry-colour","entry-font", "entry-select-colour",
                                                                     "hint-colour", "hint-font", "hint-text", "hint-x","hint-y",
                                                                     "menu-bullet", "menu-columns", "menu-direction", "menu-guidelines",
                                                                     "menu-horizontal-padding", "menu-horizontal-separation", "menu-icon-height", "menu-icon-mode",
                                                                     "menu-icon-width", "menu-rows", "menu-strip", "menu-strip-padding",  "menu-text-height", "menu-text-mode", "menu-text-width",
                                                                      "menu-vertical-padding", "menu-vertical-separation",
                                                                     "menu-window"))
-                                          
+
                 # and save the medialist
                 dic={'issue':self.editor_issue,'tracks':tracks}
                 ofile  = open(self.pp_profile_dir + os.sep + to_file, "wb")
@@ -949,7 +958,7 @@ class PPEditor(object):
         for index,track in enumerate(tracks):
             if track['track-ref']== 'menu-track':
                 break
-            
+
         #update some fields with new default content
         tracks[index]['links']=PPdefinitions.new_tracks['menu']['links']
 
@@ -958,9 +967,9 @@ class PPEditor(object):
             tracks[index][field]=show[field]
             # print show[field], tracks[index][field]
             pass
-            
-        
-                                          
+
+
+
 
     def update_medialists(self):
          # UPDATE MEDIALISTS AND THEIR TRACKS
@@ -974,7 +983,7 @@ class PPEditor(object):
                 replacement_tracks=self.update_tracks(tracks)
                 dic={'issue':self.editor_issue,'tracks':replacement_tracks}
                 ofile  = open(self.pp_profile_dir + os.sep + this_file, "wb")
-                json.dump(dic,ofile,sort_keys=True,indent=1)       
+                json.dump(dic,ofile,sort_keys=True,indent=1)
 
 
 
@@ -1017,10 +1026,10 @@ class PPEditor(object):
             replacement_show=copy.deepcopy(PPdefinitions.new_shows[show_type])
             replacement_show.update(left_overs)
             replacement_shows.append(copy.deepcopy(replacement_show))
-        return replacement_shows                
-            
+        return replacement_shows
 
- 
+
+
 # *************************************
 # EDIT 1 DIALOG CLASS
 # ************************************
@@ -1030,7 +1039,7 @@ class Edit1Dialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, title, label, default):
         # save the extra args to instance variables
         self.label_1 = label
-        self.default_1 = default     
+        self.default_1 = default
         # and call the base class _init_which uses the args in body
         tkSimpleDialog.Dialog.__init__(self, parent, title)
 
@@ -1061,7 +1070,7 @@ class Options(object):
 
         # define options for Editor
         self.pp_home_dir =""   # home directory containing profile to be edited.
-        self.initial_media_dir =""   # initial directory for open playlist      
+        self.initial_media_dir =""   # initial directory for open playlist
         self.debug = False  # print debug information to terminal
 
 
@@ -1071,12 +1080,12 @@ class Options(object):
             self.create()
 
 
-    
+
     def read(self):
         """reads options from options file to interface"""
         config=ConfigParser.ConfigParser()
         config.read(self.options_file)
-        
+
         self.pp_home_dir =config.get('config','home',0)
         self.pp_profiles_offset =config.get('config','offset',0)
         self.initial_media_dir =config.get('config','media',0)
@@ -1161,7 +1170,7 @@ class OptionsDialog(tkSimpleDialog.Dialog):
         config.set('config','offset',self.e_offset.get())
         with open(self.options_file, 'wb') as optionsfile:
             config.write(optionsfile)
-    
+
 
 # ***************************************
 # MAIN
@@ -1170,4 +1179,3 @@ class OptionsDialog(tkSimpleDialog.Dialog):
 
 if __name__  ==  "__main__":
     editor = PPEditor()
-

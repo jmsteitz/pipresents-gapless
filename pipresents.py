@@ -66,7 +66,7 @@ class PiPresents(object):
 
         # set up the handler for SIGTERM
         signal.signal(signal.SIGTERM,self.handle_sigterm)
-        
+
 
 # ****************************************
 # Initialisation
@@ -77,13 +77,13 @@ class PiPresents(object):
         # get Pi Presents code directory
         pp_dir=sys.path[0]
         self.pp_dir=pp_dir
-        
+
         if not os.path.exists(pp_dir+"/pipresents.py"):
             if self.options['manager']  is False:
                 tkMessageBox.showwarning("Pi Presents","Bad Application Directory")
             exit(102)
 
-        
+
         # Initialise logging and tracing
         Monitor.log_path=pp_dir
         self.mon=Monitor()
@@ -93,10 +93,10 @@ class PiPresents(object):
         # uncomment to enable control of logging from within a class
         # Monitor.enable_in_code = True # enables control of log level in the code for a class  - self.mon.set_log_level()
 
-        
+
         # make a shorter list to log/trace only some classes without using enable_in_code.
         Monitor.classes  = ['PiPresents',
-                            
+
                             'HyperlinkShow','RadioButtonShow','ArtLiveShow','ArtMediaShow','MediaShow','LiveShow','MenuShow',
                             'GapShow','Show','ArtShow',
                             'AudioPlayer','BrowserPlayer','ImagePlayer','MenuPlayer','MessagePlayer','VideoPlayer','Player',
@@ -104,12 +104,13 @@ class PiPresents(object):
                             'PathManager','ControlsManager','ShowManager','PluginManager',
                             'MplayerDriver','OMXDriver','UZBLDriver',
                             'KbdDriver','GPIODriver','TimeOfDay','ScreenDriver','Animate','OSCDriver',
-                            'Network','Mailer'
+                            'Network','Mailer',
+                            'RadioMediaShow'
                             ]
-        
+
 
         # Monitor.classes=['PiPresents','MediaShow','GapShow','Show','VideoPlayer','Player','OMXDriver']
-        
+
         # get global log level from command line
         Monitor.log_level = int(self.options['debug'])
         Monitor.manager = self.options['manager']
@@ -127,7 +128,7 @@ class PiPresents(object):
 
         self.mon.log(self,'\n'+check_output(["omxplayer", "-v"]))
         self.mon.log(self,'\nGPU Memory: '+check_output(["vcgencmd", "get_mem", "gpu"]))
-        
+
 
         # optional other classes used
         self.root=None
@@ -146,7 +147,7 @@ class PiPresents(object):
             self.mon.err(self,'Do not run Pi Presents with sudo')
             self.end('error','Do not run Pi Presents with sudo')
 
-        
+
         user=os.getenv('USER')
 
         self.mon.log(self,'User is: '+ user)
@@ -161,33 +162,33 @@ class PiPresents(object):
         self.interface=''
         self.ip=''
         self.unit=''
-        
+
         # sets self.network_connected and self.network_details
         self.init_network()
 
-        
+
         # start the mailer and send email when PP starts
         self.email_enabled=False
         if self.network_connected is True:
             self.init_mailer()
             if self.email_enabled is True and self.mailer.email_at_start is True:
                 subject= '[Pi Presents] ' + self.unit + ': PP Started on ' + time.strftime("%Y-%m-%d %H:%M")
-                message = time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip 
-                self.send_email('start',subject,message) 
+                message = time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip
+                self.send_email('start',subject,message)
 
-         
+
         # get profile path from -p option
         if self.options['profile'] != '':
             self.pp_profile_path="/pp_profiles/"+self.options['profile']
         else:
             self.mon.err(self,"Profile not specified in command ")
             self.end('error','Profile not specified with the commands -p option')
-        
+
        # get directory containing pp_home from the command,
         if self.options['home']  == "":
             home = os.sep+ 'home' + os.sep + user + os.sep+"pp_home"
         else:
-            home = self.options['home'] + os.sep+ "pp_home"         
+            home = self.options['home'] + os.sep+ "pp_home"
         self.mon.log(self,"pp_home directory is: " + home)
 
 
@@ -218,14 +219,14 @@ class PiPresents(object):
             self.end('error',"Failed to find requested profile: "+ self.pp_profile)
 
         self.mon.start_stats(self.options['profile'])
-        
+
         if self.options['verify'] is True:
             val =Validator()
             if  val.validate_profile(None,pp_dir,self.pp_home,self.pp_profile,self.pipresents_issue,False) is  False:
                 self.mon.err(self,"Validation Failed")
                 self.end('error','Validation Failed')
 
-         
+
         # initialise and read the showlist in the profile
         self.showlist=ShowList()
         self.showlist_file= self.pp_profile+ "/pp_showlist.json"
@@ -259,8 +260,8 @@ class PiPresents(object):
             call(["xset","s", "off"])
             call(["xset","s", "-dpms"])
 
-        self.root=Tk()   
-       
+        self.root=Tk()
+
         self.title='Pi Presents - '+ self.pp_profile
         self.icon_text= 'Pi Presents'
         self.root.title(self.title)
@@ -268,7 +269,7 @@ class PiPresents(object):
         self.root.config(bg=self.pp_background)
 
         self.mon.log(self, 'native screen dimensions are ' + str(self.root.winfo_screenwidth()) + ' x ' + str(self.root.winfo_screenheight()) + ' pixcels')
-        if self.options['screensize'] =='':        
+        if self.options['screensize'] =='':
             self.screen_width = self.root.winfo_screenwidth()
             self.screen_height = self.root.winfo_screenheight()
         else:
@@ -278,7 +279,7 @@ class PiPresents(object):
                 self.end('error',message)
 
         self.mon.log(self, 'commanded screen dimensions are ' + str(self.screen_width) + ' x ' + str(self.screen_height) + ' pixcels')
-       
+
         # set window dimensions and decorations
         if self.options['fullscreen'] is False:
             self.window_width=int(self.root.winfo_screenwidth()*self.nonfull_window_width)
@@ -292,14 +293,14 @@ class PiPresents(object):
             self.root.attributes('-fullscreen', True)
             os.system('unclutter &')
             self.window_x=0
-            self.window_y=0  
+            self.window_y=0
             self.root.geometry("%dx%d%+d%+d"  % (self.window_width,self.window_height,self.window_x,self.window_y))
             self.root.attributes('-zoomed','1')
 
-        # canvas cover the whole screen whatever the size of the window. 
+        # canvas cover the whole screen whatever the size of the window.
         self.canvas_height=self.screen_height
         self.canvas_width=self.screen_width
-  
+
         # make sure focus is set.
         self.root.focus_set()
 
@@ -319,13 +320,13 @@ class PiPresents(object):
                     width=self.canvas_width,
                         highlightthickness=1,
                                highlightcolor='yellow')
-            
+
         self.canvas.place(x=0,y=0)
         # self.canvas.config(bg='black')
         self.canvas.focus_set()
 
 
-                
+
 # ****************************************
 # INITIALISE THE INPUT DRIVERS
 # ****************************************
@@ -365,7 +366,7 @@ class PiPresents(object):
             # os.remove("/tmp/omxplayerdbus.{}".format(user))
         # if os.path.exists("/tmp/omxplayerdbus.{}.pid".format(user)):
             # os.remove("/tmp/omxplayerdbus.{}.pid".format(user))
-        
+
         # kick off GPIO if enabled by command line option
         self.gpio_enabled=False
         if os.path.exists(self.pp_profile + os.sep + 'pp_io_config'+os.sep+ 'gpio.cfg'):
@@ -378,7 +379,7 @@ class PiPresents(object):
                 self.gpio_enabled=True
                 # and start polling gpio
                 self.gpiodriver.poll()
-            
+
         # kick off animation sequencer
         self.animate = Animate()
         self.animate.init(pp_dir,self.pp_home,self.pp_profile,self.canvas,200,self.handle_output_event)
@@ -408,9 +409,9 @@ class PiPresents(object):
                     self.osc_enabled=True
                     self.root.after(1000,self.oscdriver.start_server())
 
-        
-        # enable ToD scheduler if schedule exists      
-        if os.path.exists(self.pp_profile + os.sep + 'schedule.json'):                
+
+        # enable ToD scheduler if schedule exists
+        if os.path.exists(self.pp_profile + os.sep + 'schedule.json'):
             self.tod_enabled = True
         else:
             self.tod_enabled=False
@@ -423,21 +424,21 @@ class PiPresents(object):
         # warn about start shows and scheduler
 
         if self.starter_show['start-show']=='' and self.tod_enabled is False:
-            self.mon.sched(self,"No Start Shows in Start Show and no shows scheduled") 
+            self.mon.sched(self,"No Start Shows in Start Show and no shows scheduled")
             self.mon.warn(self,"No Start Shows in Start Show and no shows scheduled")
 
         if self.starter_show['start-show'] !='' and self.tod_enabled is True:
-            self.mon.sched(self,"Start Shows in Start Show and shows scheduled - conflict?") 
+            self.mon.sched(self,"Start Shows in Start Show and shows scheduled - conflict?")
             self.mon.warn(self,"Start Shows in Start Show and shows scheduled - conflict?")
 
         # run the start shows
-        self.run_start_shows()           
+        self.run_start_shows()
 
         # kick off the time of day scheduler which may run additional shows
         if self.tod_enabled is True:
             self.tod=TimeOfDay()
             self.tod.init(pp_dir,self.pp_home,self.pp_profile,self.root,self.handle_command)
-            self.tod.poll()            
+            self.tod.poll()
 
 
         # start Tkinters event loop
@@ -452,20 +453,20 @@ class PiPresents(object):
             return 'error','dimensions are not positive integers in --fullscreen',0,0
         else:
             return 'normal','',int(fields[0]),int(fields[1])
-        
+
 
 # *********************
 #  RUN START SHOWS
-# ********************   
+# ********************
     def run_start_shows(self):
         self.mon.trace(self,'run start shows')
-        # parse the start shows field and start the initial shows       
+        # parse the start shows field and start the initial shows
         show_refs=self.starter_show['start-show'].split()
         for show_ref in show_refs:
             reason,message=self.show_manager.control_a_show(show_ref,'open')
             if reason == 'error':
                 self.mon.err(self,message)
-                
+
 
 
 # *********************
@@ -477,18 +478,18 @@ class PiPresents(object):
         if command_text.strip()=="":
             return
 
-        if command_text[0]=='/': 
+        if command_text[0]=='/':
             if self.osc_enabled is True:
                 self.oscdriver.send_command(command_text)
             return
-        
+
         fields= command_text.split()
         show_command=fields[0]
         if len(fields)>1:
             show_ref=fields[1]
         else:
             show_ref=''
-            
+
         if show_command in ('open','close'):
             self.mon.sched(self, command_text + ' received from show:'+source)
             if self.shutdown_required is False:
@@ -511,7 +512,7 @@ class PiPresents(object):
         else:
             reason='error'
             message = 'command not recognised: '+ show_command
-            
+
         if reason=='error':
             self.mon.err(self,message)
         return
@@ -536,7 +537,7 @@ class PiPresents(object):
             self.end(reason,message)
         self.handle_output_event(name,param_type,param_values,0)
 
-               
+
     def handle_output_event(self,symbol,param_type,param_values,req_time):
         if self.gpio_enabled is True:
             reason,message=self.gpiodriver.handle_output_event(symbol,param_type,param_values,req_time)
@@ -553,15 +554,15 @@ class PiPresents(object):
         self.mon.log(self,"event received: "+symbol + ' from '+ source)
         if symbol == 'pp-terminate':
             self.handle_user_abort()
-            
+
         elif symbol == 'pp-shutdown':
             self.shutdown_pressed('delay')
-            
+
         elif symbol == 'pp-shutdownnow':
             # need root.after to grt out of st thread
             self.root.after(1,self.e_shutdown_pressed)
             return
-        
+
         elif symbol == 'pp-exitpipresents':
             self.exitpipresents_required=True
             if self.show_manager.all_shows_exited() is True:
@@ -587,7 +588,7 @@ class PiPresents(object):
                self.all_shows_ended_callback('normal','no shows running')
             else:
                 # calls exit method of all shows, results in all_shows_closed_callback
-                self.show_manager.exit_all_shows()           
+                self.show_manager.exit_all_shows()
 
 
     def on_shutdown_delay(self):
@@ -645,32 +646,32 @@ class PiPresents(object):
         if reason == 'killed':
             if self.email_enabled is True and self.mailer.email_on_terminate is True:
                 subject= '[Pi Presents] ' + self.unit + ': PP Exited with reason: Terminated'
-                message = time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip 
+                message = time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip
                 self.send_email(reason,subject,message)
             self.mon.sched(self, "Pi Presents Terminated, au revoir\n")
             self.mon.log(self, "Pi Presents Terminated, au revoir")
-                          
-            # close logging files 
+
+            # close logging files
             self.mon.finish()
             sys.exit(101)
-                          
+
         elif reason == 'error':
             if self.email_enabled is True and self.mailer.email_on_error is True:
                 subject= '[Pi Presents] ' + self.unit + ': PP Exited with reason: Error'
-                message_text = 'Error message: '+ message + '\n'+ time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip 
-                self.send_email(reason,subject,message_text)   
+                message_text = 'Error message: '+ message + '\n'+ time.strftime("%Y-%m-%d %H:%M") + '\n ' + self.unit + '\n ' + self.interface + '\n ' + self.ip
+                self.send_email(reason,subject,message_text)
             self.mon.sched(self, "Pi Presents closing because of error, sorry\n")
             self.mon.log(self, "Pi Presents closing because of error, sorry")
-                          
-            # close logging files 
+
+            # close logging files
             self.mon.finish()
             sys.exit(102)
 
-        else:           
+        else:
             self.mon.sched(self,"Pi Presents  exiting normally, bye\n")
             self.mon.log(self,"Pi Presents  exiting normally, bye")
-            
-            # close logging files 
+
+            # close logging files
             self.mon.finish()
             if self.shutdown_required is True:
                 # print 'SHUTDOWN'
@@ -688,7 +689,7 @@ class PiPresents(object):
             self.ip=''
             self.interface=''
             return
-        
+
         self.network=Network()
         self.network_connected=False
 
@@ -790,8 +791,8 @@ class PiPresents(object):
                     self.mon.log(self,'Failed to connect to email SMTP server after ' + str(tries))
                     return False
 
-                
-    
+
+
     # tidy up all the peripheral bits of Pi Presents
     def tidy_up(self):
         self.mon.log(self, "Tidying Up")
@@ -799,22 +800,22 @@ class PiPresents(object):
         if self.options['noblank'] is True:
             call(["xset","s", "on"])
             call(["xset","s", "+dpms"])
-            
+
         # tidy up animation and gpio
         if self.animate is not None:
             self.animate.terminate()
-            
+
         if self.gpio_enabled==True:
             self.gpiodriver.terminate()
 
         if self.osc_enabled is True:
             self.oscdriver.terminate()
-            
+
         # tidy up time of day scheduler
         if self.tod_enabled is True:
             self.tod.terminate()
 
-         
+
 if __name__ == '__main__':
 
     # wait for environment ariables to stabilize. Required for Jessie autostart
@@ -829,14 +830,9 @@ if __name__ == '__main__':
             break
         tries +=1
         sleep (0.5)
-        
+
     if success is False:
         tkMessageBox.showwarning("pipresents.py","Bad application directory: "+ code_dir)
         exit()
 
     pp = PiPresents()
-
-
-
-
-
