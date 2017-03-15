@@ -573,3 +573,67 @@ class RadioMediaShow(Show):
                 # unhandled state
                 self.mon.err(self,"Unhandled playing event: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
                 self.end('error',"Unhandled playing event: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
+
+# *********************
+# Interface with other shows/players to reduce black gaps
+# *********************
+
+    # called just before a track is shown to remove the  previous track from the screen
+    # and if necessary close it
+    def track_ready_callback(self,enable_show_background):
+        self.delete_eggtimer()
+
+        # get control bindings for this show
+        # needs to be done for each track as track can override the show controls
+        if self.show_params['disable-controls'] == 'yes':
+            self.controls_list=[]
+        else:
+            reason,message,self.controls_list= self.controlsmanager.get_controls(self.show_params['controls'])
+            if reason=='error':
+                self.mon.err(self,message)
+                self.end('error',"error in controls: " + message)
+                return
+
+            # print 'controls',reason,self.show_params['controls'],self.controls_list
+            #merge controls from the track
+            controls_text=self.current_player.get_links()
+            reason,message,track_controls=self.controlsmanager.parse_controls(controls_text)
+            if reason == 'error':
+                self.mon.err(self,message + " in track: "+ self.current_player.track_params['track-ref'])
+                self.error_signal=True
+                self.what_next_after_showing()
+            self.controlsmanager.merge_controls(self.controls_list,track_controls)
+
+        # enable the click-area that are in the list of controls
+        self.sr.enable_click_areas(self.controls_list)
+        Show.base_track_ready_callback(self,enable_show_background)
+
+
+    # callback from begining of a subshow, provide previous player to called show
+    def subshow_ready_callback(self):
+        return Show.base_subshow_ready_callback(self)
+
+
+# *********************
+# End the show
+# *********************
+    def end(self,reason,message):
+        Show.base_end(self,reason,message)
+
+
+
+    def stop_timers(self):
+        # clear outstanding time of day events for this show
+        # self.tod.clear_times_list(id(self))
+
+        if self.poll_for_interval_timer is not None:
+            self.canvas.after_cancel(self.poll_for_interval_timer)
+            self.poll_for_interval_timer=None
+
+        if self.interval_timer is not None:
+            self.canvas.after_cancel(self.interval_timer)
+            self.interval_timer=None
+
+        if self.duration_timer is not None:
+            self.canvas.after_cancel(self.duration_timer)
+            self.duration_timer=None
