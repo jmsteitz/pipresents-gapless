@@ -216,4 +216,330 @@ class RadioMediaShow(Show):
             self.medialist.start()
         self.start_load_show_loop(self.medialist.selected_track())
 
-        
+
+# ***************************
+# Track load/show loop
+# ***************************
+
+    # track playing loop starts here
+    def start_load_show_loop(self,selected_track):
+
+        # uncomment the next line to write stats for every track
+        # Show.write_stats(self,'play a track',self.show_params,selected_track)
+
+        # shuffle players
+        Show.base_shuffle(self)
+
+        self.delete_eggtimer()
+
+        # is child track required
+        if self.show_params['child-track-ref'] != '':
+            self.enable_child=True
+        else:
+            self.enable_child=False
+
+
+
+        # load the track or show
+        # params - track,enable_menu
+        enable=self.enable_child & self.enable_hint
+        Show.base_load_track_or_show(self,selected_track,self.what_next_after_load,self.end_shower,enable)
+
+
+    # track has loaded so show it.
+    def what_next_after_load(self,status,message):
+        self.mon.log(self,'Show Id ' + str(self.show_id)+' load complete with status: ' + status +'  message: ' +message)
+        if self.current_player.play_state == 'load-failed':
+            self.error_signal=True
+            self.what_next_after_showing()
+
+        else:
+            if self.terminate_signal is True or self.exit_signal is True or self.user_stop_signal is True:
+                self.what_next_after_showing()
+            else:
+                self.mon.trace(self, ' - showing track')
+                self.current_player.show(self.track_ready_callback,self.finished_showing,self.closed_after_showing)
+
+
+    def finished_showing(self,reason,message):
+        self.sr.hide_click_areas(self.controls_list)
+        if self.current_player.play_state == 'show-failed':
+            self.error_signal=True
+        else:
+            self.req_next='finished-player'
+        # showing has finished with 'pause at end', showing the next track will close it after next has started showing
+        self.mon.trace(self, ' - pause at end ')
+        self.mon.log(self,"pause at end of showing track with reason: "+reason+ ' and message: '+ message)
+        self.what_next_after_showing()
+
+
+    def closed_after_showing(self,reason,message):
+        self.sr.hide_click_areas(self.controls_list)
+        if self.current_player.play_state == 'show-failed':
+            self.error_signal=True
+        else:
+            self.req_next='closed-player'
+        # showing has finished with closing of player but track instance is alive for hiding the x_content
+        self.mon.trace(self,' - closed')
+        self.mon.log(self,"Closed after showing track with reason: "+reason+ ' and message: '+ message)
+        self.what_next_after_showing()
+
+
+    # subshow or child show has ended
+    def end_shower(self,show_id,reason,message):
+        self.mon.log(self,self.show_params['show-ref']+ ' '+ str(self.show_id)+ ': Returned from shower with ' + reason +' ' + message)
+        self.sr.hide_click_areas(self.controls_list)
+        self.req_next=reason
+        Show.base_end_shower(self)
+        self.what_next_after_showing()
+
+    def pretty_what_next_after_showing_state(self):
+        state = '\n* terminate signal ' + str(self.terminate_signal)
+        state += '\n* error signal ' + str(self.error_signal)
+        state += '\n* req_next used to indicate subshow reports an error ' + self.req_next
+        state += '\n* exit signal ' +  str(self.exit_signal)
+        state += '\n* show timeout  signal ' + str(self.show_timeout_signal)
+        state += '\n* user stop  signal ' + str(self.user_stop_signal)
+        state += '\n* previous track  signal ' + str(self.previous_track_signal)
+        state += '\n* next track  signal ' + str(self.next_track_signal)
+        state += '\n* kickback from subshow ' + str(self.subshow_kickback_signal)
+        return state +'\n'
+
+
+    def what_next_after_showing(self):
+        self.mon.trace(self,self.pretty_what_next_after_showing_state())
+
+        self.track_count+=1
+        # set false when child rack is to be played
+        self.enable_hint=True
+
+        # first of all deal with conditions that do not require the next track to be shown
+        # some of the conditions can happen at any time, others only when a track is closed or at pause_at_end
+
+        # need to terminate
+        if self.terminate_signal is True:
+            self.terminate_signal=False
+            self.stop_timers()
+            # set what to do after closed or unloaded
+            self.ending_reason='killed'
+            Show.base_close_or_unload(self)
+
+        elif self.error_signal== True or self.req_next=='error':
+            self.error_signal=False
+            self.req_next=''
+            self.stop_timers()
+            # set what to do after closed or unloaded
+            self.ending_reason='error'
+            Show.base_close_or_unload(self)
+
+        # used for exiting show from other shows, time of day, external etc.
+        elif self.exit_signal is True:
+            self.exit_signal=False
+            self.stop_timers()
+            self.ending_reason='exit'
+            Show.base_close_or_unload(self)
+
+        #  show timeout
+        elif self.show_timeout_signal is True:
+            self.show_timeout_signal=False
+            self.stop_timers()
+            self.ending_reason='user-stop'
+            Show.base_close_or_unload(self)
+
+        # user wants to stop the show
+        elif self.user_stop_signal is True:
+            self.user_stop_signal=False
+            self.stop_timers()
+            self.ending_reason='user-stop'
+            Show.base_close_or_unload(self)
+
+
+       # interval > 0. If last track has finished we are waiting for interval timer before ending the list
+       # note: if medialist finishes after interval is up then this route is used to start trigger.
+        elif self.waiting_for_interval is True:
+            # interval_timer_signal set by alarm clock started in start_list
+            if self.interval_timer_signal is True:
+                self.interval_timer_signal=False
+                self.waiting_for_interval=False
+                # print 'RECEIVED INTERVAL TIMER SIGNAL'
+                if self.show_params['repeat']=='repeat':
+                    self.wait_for_trigger()
+                else:
+                    self.stop_timers()
+                    self.ending_reason='user-stop'
+                    Show.base_close_or_unload(self)
+            else:
+                self.poll_for_interval_timer=self.canvas.after(1000,self.what_next_after_showing)
+
+
+
+        # has content of list been changed (replaced if it has, used for content of livelist)
+        # causes it to go to wait_for_trigger and start_list
+        #not sure why need clos_and_unload here ???????
+        elif self.medialist.replace_if_changed() is True:
+            self.ending_reason='change-medialist'
+            # print 'CHANGE REQ'
+            Show.base_close_or_unload(self)
+
+
+        # otherwise consider operation that might show the next track
+        else:
+            # setup default direction for next track as normally goes forward unless kicked back
+            self.kickback_for_next_track=False
+            # print 'init direction to False at begin of what_next_after showing', self.kickback_for_next_track
+            # end trigger from input, or track count
+            if self.end_trigger_signal is True or (self.track_count_limit >0  and self.track_count == self.track_count_limit):
+                self.end_trigger_signal=False
+                # repeat so test start trigger
+                if self.show_params['repeat'] == 'repeat':
+                    self.stop_timers()
+                    # print 'END TRIGGER restart'
+                    self.wait_for_trigger()
+                else:
+                    # single run so exit show
+                    if self.level != 0:
+                        self.kickback_for_next_track=False
+                        self.subshow_kickback_signal=False
+                        self.end('normal',"End of single run - Return from Sub Show")
+                    else:
+                        # end of single run and at top - exit the show
+                        self.stop_timers()
+                        self.ending_reason='user-stop'
+                        Show.base_close_or_unload(self)
+
+            # user wants to play child
+            elif self.play_child_signal is True:
+                self.play_child_signal=False
+                index = self.medialist.index_of_track(self.child_track_ref)
+                if index >=0:
+                    # don't use select the track as need to preserve mediashow sequence for returning from child
+                    child_track=self.medialist.track(index)
+                    Show.write_stats(self,'play child',self.show_params,child_track)
+                    self.display_eggtimer()
+                    self.enable_hint=False
+                    self.start_load_show_loop(child_track)
+                else:
+                    self.mon.err(self,"Child not found in medialist: "+ self.child_track_ref)
+                    self.ending_reason='error'
+                    Show.base_close_or_unload(self)
+
+
+
+            # skip to next track on user input or after subshow
+            elif self.next_track_signal is True:
+                # print 'skip forward test' ,self.subshow_kickback_signal
+                if self.next_track_signal is True or self.subshow_kickback_signal is False:
+                    self.next_track_signal=False
+                    self.kickback_for_next_track=False
+                    if self.medialist.at_end() is True:
+                        # medialist_at_end can give false positive for shuffle
+                        if  self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'repeat':
+                            self.wait_for_trigger()
+                        elif  self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'single-run':
+                            if self.level != 0:
+                                self.kickback_for_next_track=False
+                                self.subshow_kickback_signal=False
+                                # print 'end subshow skip forward test, self. direction is ' ,self.kickback_for_next_track
+                                self.end('normal',"Return from Sub Show")
+                            else:
+                                # end of single run and at top - exit the show
+                                self.stop_timers()
+                                self.ending_reason='user-stop'
+                                Show.base_close_or_unload(self)
+                        else:
+                            # shuffling  - just do next track
+                            self.kickback_for_next_track=False
+                            self.medialist.next(self.show_params['sequence'])
+                            self.start_load_show_loop(self.medialist.selected_track())
+                    else:
+                        # not at end just do next track
+                        self.medialist.next(self.show_params['sequence'])
+                        self.start_load_show_loop(self.medialist.selected_track())
+
+
+            # skip to previous track on user input or after subshow
+            elif self.previous_track_signal is True or self.subshow_kickback_signal is True:
+                # print 'skip backward test, subshow kickback is' ,self.subshow_kickback_signal
+                self.subshow_kickback_signal=False
+                self.previous_track_signal=False
+                self.kickback_for_next_track=True
+                # medialist_at_start can give false positive for shuffle
+                if self.medialist.at_start() is True:
+                    # print 'AT START'
+                    if  self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'repeat':
+                        self.kickback_for_next_track=True
+                        self.wait_for_trigger()
+                    elif  self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'single-run':
+                        if self.level != 0:
+                            self.kickback_for_next_track=True
+                            self.subshow_kickback_signal=True
+                            # print 'end subshow skip forward test, self. direction is ' ,self.kickback_for_next_track
+                            self.end('normal',"Return from Sub Show")
+                        else:
+                            # end of single run and at top - exit the show
+                            self.stop_timers()
+                            self.ending_reason='user-stop'
+                            Show.base_close_or_unload(self)
+                    else:
+                        # shuffling  - just do previous track
+                        self.kickback_for_next_track=True
+                        self.medialist.previous(self.show_params['sequence'])
+                        self.start_load_show_loop(self.medialist.selected_track())
+                else:
+                    # not at end just do next track
+                    self.medialist.previous(self.show_params['sequence'])
+                    self.start_load_show_loop(self.medialist.selected_track())
+
+
+
+
+            # AT END OF MEDIALIST
+            elif self.medialist.at_end() is True:
+                # print 'MEDIALIST AT END'
+
+                # interval>0 and list finished so wait for the interval timer
+                if self.show_params['sequence'] == "ordered"  and self.interval > 0 and self.interval_timer_signal==False:
+                    self.waiting_for_interval=True
+                    # print 'WAITING FOR INTERVAL'
+                    Show.base_shuffle(self)
+                    Show.base_track_ready_callback(self,False)
+                    self.poll_for_interval_timer=self.canvas.after(200,self.what_next_after_showing)
+
+                # interval=0
+                #elif self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'repeat' and self.show_params['trigger-end-type']== 'interval' and int(self.show_params['trigger-end-param']) == 0:
+                    #self.medialist.next(self.show_params['sequence'])
+                    # self.start_load_show_loop(self.medialist.selected_track())
+
+                # shuffling so there is no end condition, get out of end test
+                elif self.show_params['sequence'] == "shuffle":
+                    self.medialist.next(self.show_params['sequence'])
+                    self.start_load_show_loop(self.medialist.selected_track())
+
+                # nothing special to do at end of list, just repeat or exit
+                elif self.show_params['sequence'] == "ordered":
+                    if self.show_params['repeat'] == 'repeat':
+                        self.wait_for_trigger()
+                    else:
+                        # single run
+                        # if not at top return to parent
+                        if self.level !=0:
+                            self.end('normal',"End of Single Run")
+                        else:
+                            # at top so close the show
+                            self.stop_timers()
+                            self.ending_reason='user-stop'
+                            Show.base_close_or_unload(self)
+
+                else:
+                    self.mon.err(self,"Unhandled playing event at end of list: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
+                    self.end('error',"Unhandled playing event at end of list: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
+
+            elif self.medialist.at_end() is False:
+                # nothing special just do the next track
+                self.medialist.next(self.show_params['sequence'])
+                self.start_load_show_loop(self.medialist.selected_track())
+
+            else:
+                # unhandled state
+                self.mon.err(self,"Unhandled playing event: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
+                self.end('error',"Unhandled playing event: "+self.show_params['sequence'] +' with ' + self.show_params['repeat']+" of "+ self.show_params['trigger-end-param'])
