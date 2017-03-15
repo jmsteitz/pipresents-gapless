@@ -27,6 +27,34 @@ class RadioMediaShow(Show):
                          pp_profile,
                          command_callback)
 
+        # instatiatate the screen driver - used only to access enable and hide click areas
+        self.sr=ScreenDriver()
+
+        self.controlsmanager=ControlsManager()
+
+        # Init variables special to this show
+        self.poll_for_interval_timer=None
+        self.interval_timer_signal=False
+        self.waiting_for_interval=False
+        self.interval_timer=None
+        self.duration_timer=None
+
+        self.end_trigger_signal=False
+        self.next_track_signal=False
+        self.previous_track_signal=False
+        self.play_child_signal = False
+        self.error_signal=False
+        self.show_timeout_signal=False
+
+        self.req_next='nil'
+        self.state='closed'
+
+        self.count=0
+        self.interval=0
+        self.duration=0
+        self.controls_list=[]
+        self.enable_hint= True
+
 
     # def play(self,end_callback,show_ready_callback, direction_command,level,controls_list):
     #
