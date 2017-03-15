@@ -7,12 +7,12 @@ class ShowManager(object):
     ShowManager manages PiPresents' concurrent shows. It does not manage sub-shows or child-shows but has a bit of common code to initilise them
     concurrent shows are always top level (level 0) shows:
     They can be opened/closed  by the start show(open only) or by 'open/close myshow' in the Show Control field of players, by time of day sceduler or by OSC
-    
+
    Two shows with the same show reference cannot be run concurrently as there is no way to reference an individual instance.
    However a workaround is to make the secong instance a subshow of a mediashow with a different reference.
 
     """
-    
+
     # Declare class variables
     shows=[]
     canvas=None    #canvas for all shows
@@ -44,7 +44,7 @@ class ShowManager(object):
                 if reason =='error':
                     return reason,message
         return 'normal','shows regiistered'
-            
+
 
     def register_show(self,ref):
         registered=self.show_registered(ref)
@@ -57,8 +57,8 @@ class ShowManager(object):
             return'normal','show registered'
         else:
             # self.mon.err(self, ' more than one show in showlist with show-ref: ' + ref )
-            return 'error', ' more than one show in showlist with show-ref: ' + ref 
-        
+            return 'error', ' more than one show in showlist with show-ref: ' + ref
+
     # is the show registered?
     # can be used to return the index to the show
     def show_registered(self,show_ref):
@@ -102,7 +102,7 @@ class ShowManager(object):
         for show in ShowManager.shows:
             shows += show[ShowManager.SHOW_REF] +'\n'
         return shows
-            
+
 # *********************************
 # show control
 # *********************************
@@ -146,7 +146,7 @@ class ShowManager(object):
         if show_obj is not None:
             show_obj.exit()
         return 'normal','exited a concurrent show'
-            
+
 
     def start_show(self,show_ref):
         index=self.show_registered(show_ref)
@@ -173,7 +173,7 @@ class ShowManager(object):
             show_obj.play(self._end_play_show,None,False,0,[])
             return 'normal','concurrent show started'
 
- 
+
     # used by shows to create subshows or child shows
     def init_subshow(self,show_id,show,show_canvas):
         return self.init_show(show_id,show,show_canvas)
@@ -208,7 +208,18 @@ class ShowManager(object):
                              self.pp_profile,
                              ShowManager.command_callback)
 
-        elif selected_show['type'] == "liveshow":    
+        elif selected_show['type'] == "radiomediashow":
+            return RadioMediaShow(show_id,
+                             selected_show,
+                             self.root,
+                             show_canvas,
+                             self.showlist,
+                             self.pp_dir,
+                             self.pp_home,
+                             self.pp_profile,
+                             ShowManager.command_callback)
+
+        elif selected_show['type'] == "liveshow":
             return LiveShow(show_id,
                             selected_show,
                             self.root,
@@ -241,7 +252,7 @@ class ShowManager(object):
                                  self.pp_home,
                                  self.pp_profile,
                                  ShowManager.command_callback)
-        
+
         elif selected_show['type'] == "menu":
             return MenuShow(show_id,
                             selected_show,
@@ -252,8 +263,8 @@ class ShowManager(object):
                             self.pp_home,
                             self.pp_profile,
                             ShowManager.command_callback)
-        
-        elif selected_show['type'] == "artmediashow":    
+
+        elif selected_show['type'] == "artmediashow":
             return ArtMediaShow(show_id,
                                 selected_show,
                                 self.root,
@@ -263,8 +274,8 @@ class ShowManager(object):
                                 self.pp_home,
                                 self.pp_profile,
                                 ShowManager.command_callback)
-        
-        elif selected_show['type'] == "artliveshow":    
+
+        elif selected_show['type'] == "artliveshow":
             return ArtLiveShow(show_id,
                                selected_show,
                                self.root,
@@ -296,7 +307,7 @@ class ShowManager(object):
             canvas['show-canvas-y2'] = self.show_canvas_y2
             canvas['show-canvas-width']  = self.show_canvas_width
             canvas['show-canvas-height'] = self.show_canvas_height
-            canvas['show-canvas-centre-x'] = self.show_canvas_centre_x 
+            canvas['show-canvas-centre-x'] = self.show_canvas_centre_x
             canvas['show-canvas-centre-y'] = self.show_canvas_centre_y
             return 'normal','',canvas
 
@@ -307,7 +318,7 @@ class ShowManager(object):
         # blank so show canvas is the whole screen
         if len(fields) < 1:
             return 'normal','',0,0,int(self.canvas['width']),int(self.canvas['height'])
-             
+
         elif len(fields) == 4:
             # window is specified
             if not (fields[0].isdigit() and fields[1].isdigit() and fields[2].isdigit() and fields[3].isdigit()):
@@ -323,7 +334,4 @@ from pp_mediashow import MediaShow
 from pp_hyperlinkshow import HyperlinkShow
 from pp_radiobuttonshow import RadioButtonShow
 from pp_artliveshow import ArtLiveShow
-from pp_artmediashow import ArtMediaShow   
-
-
-
+from pp_artmediashow import ArtMediaShow
