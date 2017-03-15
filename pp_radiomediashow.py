@@ -36,6 +36,15 @@ class RadioMediaShow(Show):
         # create an instance of PathManager -  only used to parse the links.
         self.path = PathManager()
 
+        self.allowed_links=('play','pause','exit','return','null','no-command','stop')
+        # init variables
+        self.links=[]
+        self.track_timeout_timer=None
+        self.show_timeout_timer=None
+        self.next_track_signal=False
+        self.current_track_ref=''
+        self.req_next=''
+
         self.controlsmanager=ControlsManager()
 
         # Init variables special to this show
