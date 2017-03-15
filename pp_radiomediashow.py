@@ -125,3 +125,23 @@ class RadioMediaShow(Show):
             self.current_player.input_pressed('stop')
         else:
             return
+
+# ***************************
+# Show sequencing
+# ***************************
+
+    def start_show(self):
+        # initial direction from parent show
+
+        self.kickback_for_next_track=self.parent_kickback_signal
+        # print '\n\ninital KICKBACK from parent', self.kickback_for_next_track
+
+        # start duration timer
+        if self.show_timeout  != 0:
+            # print 'set alarm ', self.show_timeout
+            self.duration_timer = self.canvas.after(self.show_timeout*1000,self.show_timeout_stop)
+
+        self.first_list=True
+
+        # and start the first list of the show
+        self.wait_for_trigger()
