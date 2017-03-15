@@ -2,6 +2,7 @@ from pp_show import Show
 from pp_medialist import MediaList
 from pp_screendriver import ScreenDriver
 from pp_controlsmanager import ControlsManager
+from pp_pathmanager import PathManager
 
 class RadioMediaShow(Show):
 
@@ -31,6 +32,9 @@ class RadioMediaShow(Show):
 
         # instatiatate the screen driver - used only to access enable and hide click areas
         self.sr=ScreenDriver()
+
+        # create an instance of PathManager -  only used to parse the links.
+        self.path = PathManager()
 
         self.controlsmanager=ControlsManager()
 
