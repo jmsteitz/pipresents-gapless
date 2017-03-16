@@ -581,7 +581,7 @@ class RadioMediaShow(Show):
                     self.waiting_for_interval=True
                     # print 'WAITING FOR INTERVAL'
                     Show.base_shuffle(self)
-                    Show.base_track_ready_callback(self,False)
+                    Show.base_track_ready_callback(self,True) # was False
                     self.poll_for_interval_timer=self.canvas.after(200,self.what_next_after_showing)
 
                 # interval=0
