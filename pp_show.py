@@ -56,14 +56,14 @@ class Show(object):
         # init things that will then be reinitialised by derived classes
         self.medialist=None
 
-        # set up logging 
+        # set up logging
         self.mon=Monitor()
         self.mon.set_log_level(16)
 
 
         # create and instance of TimeOfDay scheduler so we can add events
         self.tod=TimeOfDay()
-        
+
         # create an  instance of showmanager so we can init child/subshows
         self.show_manager=ShowManager(self.show_id,self.showlist,self.show_params,self.root,self.show_canvas,self.pp_dir,self.pp_profile,self.pp_home)
 
@@ -85,7 +85,7 @@ class Show(object):
         self.level=0
         self.subshow_kickback_signal=False
         self.kickback_for_next_track=False
-        
+
         # get background image from profile.
         # print 'background', self.show_params['background-image']
         if self.show_params['background-image'] != '':
@@ -183,18 +183,18 @@ class Show(object):
         else:
             # dispatch track by type
             self.mon.log(self,self.show_params['show-ref']+ ' '+ str(self.show_id)+ ": Track type is: "+ track_type)
-            
+
             self.current_player=self.base_init_selected_player(selected_track)
             #menu has no track file
             if selected_track['type']=='menu':
                 track_file=''
-                
+
             # messageplayer passes the text not a file name
             elif selected_track['type'] == 'message':
                 track_file=selected_track['text']
             else:
                 track_file=self.base_complete_path(selected_track['location'])
-                
+
             self.mon.trace(self,' - track is: ' + track_file)
             self.mon.trace(self,' - current_player is: '+ self.mon.pretty_inst(self.current_player))
             self.current_player.load(track_file,
@@ -213,12 +213,12 @@ class Show(object):
         # dispatch track by type
         track_type=selected_track['type']
         self.mon.log(self,"Track type is: "+ track_type)
-                                      
+
         if track_type == "image":
             return ImagePlayer(self.show_id,self.showlist,self.root,self.show_canvas,
                                self.show_params,selected_track,self.pp_dir,self.pp_home,
                                self.pp_profile,self.end,self.command_callback)
-    
+
         elif track_type == "video":
             return VideoPlayer(self.show_id,self.showlist,self.root,self.show_canvas,
                                self.show_params,selected_track,self.pp_dir,self.pp_home,
@@ -233,7 +233,7 @@ class Show(object):
             return BrowserPlayer(self.show_id,self.showlist,self.root,self.show_canvas,
                                  self.show_params,selected_track,self.pp_dir,self.pp_home,
                                  self.pp_profile,self.end,self.command_callback)
-  
+
         elif track_type == "message":
             return MessagePlayer(self.show_id,self.showlist,self.root,self.show_canvas,
                                  self.show_params,selected_track,self.pp_dir,self.pp_home,
@@ -243,7 +243,7 @@ class Show(object):
             return MenuPlayer(self.show_id,self.showlist,self.root,self.show_canvas,
                               self.show_params,selected_track,self.pp_dir,self.pp_home,
                               self.pp_profile,self.end,self.command_callback)
-                                   
+
         else:
             return None
 
@@ -257,7 +257,7 @@ class Show(object):
 
 
     # called just before a track is shown to remove the  previous track from the screen
-    # and if necessary close it        
+    # and if necessary close it
     def base_track_ready_callback(self,enable_show_background):
         self.mon.trace(self,'')
         # show the show background done for every track but quick operation
@@ -292,7 +292,7 @@ class Show(object):
     # used by end_shower to get the last track of the subshow
     def base_end_shower(self):
         self.mon.trace(self,' -  returned back to level: ' +str(self.level))
-        # get the previous subshow and last track it played 
+        # get the previous subshow and last track it played
         self.previous_shower,self.current_player=self.shower.base_subshow_ended_callback()
         if self.previous_shower!= None:
             self.subshow_kickback_signal=self.shower.subshow_kickback_signal
@@ -336,10 +336,10 @@ class Show(object):
 
             elif self.ending_reason == 'user-stop':
                 self.end('normal',"show quit by stop operation")
-                    
+
             else:
                 self.mon.fatal(self,"Unhandled ending_reason: " + self.ending_reason)
-                self.end('error',"Unhandled ending_reason: " + self.ending_reason)          
+                self.end('error',"Unhandled ending_reason: " + self.ending_reason)
 
 
     def _base_closed_callback_current(self,status,message):
@@ -378,12 +378,12 @@ class Show(object):
                     # self.base_close_previous()
                     # go to start of list via wait for trigger.
                     self.wait_for_trigger()
-                    
+
                 elif self.ending_reason == 'show-timeout':
                     self.current_player.hide()
                     self.current_player=None
                     self.end('normal',"show timeout")
-                    
+
                 elif self.ending_reason == 'user-stop':
                     if self.level !=0:
                         self.end('normal',"show quit by stop operation")
@@ -391,8 +391,8 @@ class Show(object):
                         self.current_player.hide()
                         self.current_player=None
                         self.base_close_previous()
-                        
-                    
+
+
                 else:
                     self.mon.fatal(self,"Unhandled ending_reason: " + self.ending_reason)
                     self.end('error',"Unhandled ending_reason: "+ self.ending_reason)
@@ -401,7 +401,7 @@ class Show(object):
 
 
 # ***************************
-# end of show 
+# end of show
 # ***************************
 
     # dummy, normally overidden by derived class
@@ -446,8 +446,8 @@ class Show(object):
         else:
             self.mon.trace(self,' - previous is None')
             self.end(self.ending_reason,'')
-            
-                
+
+
 
     def _base_close_previous_callback(self,status,message):
         self.mon.trace(self, ' -  previous is None  - was ' + self.mon.pretty_inst(self.previous_player))
@@ -508,8 +508,10 @@ class Show(object):
         self.mon.log(self, self.show_params['show-ref']+ ' Show Id: '+ str(self.show_id)+": received input event: " + symbol)
 
         if self.shower is not None:
+            print 'shower handles input event'
             self.shower.handle_input_event(symbol)
         else:
+            print 'show handles input event'
             self.handle_input_event_this_show(symbol)
 
     #dummy must be overridden in derived class
@@ -517,7 +519,7 @@ class Show(object):
         self.mon.err(self,"input_pressed_this_show not overidden")
         self.ending_reason='killed'
         Show.base_close_or_unload(self)
-            
+
     def base_load_show_background(self):
         # load show background image
         if self.background_file != '':
@@ -545,12 +547,12 @@ class Show(object):
                 return 'normal','show background loaded'
         else:
             return 'normal','no backgound to load'
-              
+
     def base_show_show_background(self):
         if self.background_obj is not None:
             # print 'show show background'
             self.canvas.itemconfig(self.background_obj,state='normal')
-            # self.canvas.update_idletasks( )    
+            # self.canvas.update_idletasks( )
 
     def base_withdraw_show_background(self):
         self.mon.trace(self,'')
@@ -592,15 +594,15 @@ class Show(object):
             if next_track['type'] in ('show','message'):
                 loc = ''
             else:
-                loc = next_track['location']                 
+                loc = next_track['location']
             self.mon.stats(show_params['type'],show_params['show-ref'],show_params['title'],command,
                             track_type,ref,title,loc)
-            
- 
+
+
 
 
 # ******************************
-# lookup controls 
+# lookup controls
 # *********************************
     def base_lookup_control(self,symbol,controls_list):
         for control in controls_list:
@@ -612,7 +614,7 @@ class Show(object):
 # ******************************
 # Eggtimer
 # *********************************
-        
+
     def display_eggtimer(self):
         text=self.show_params['eggtimer-text']
         if text != '':
@@ -622,7 +624,7 @@ class Show(object):
                                                    fill=self.show_params['eggtimer-colour'],
                                                    font=self.show_params['eggtimer-font'],
                                                    anchor='nw')
-            
+
             self.canvas.update_idletasks( )
 
 
@@ -646,7 +648,7 @@ class Show(object):
                                                    fill=self.show_params['admin-colour'],
                                                    font=self.show_params['admin-font'],
                                                    anchor='nw')
-            
+
         self.canvas.update_idletasks( )
 
 
@@ -658,7 +660,7 @@ class Show(object):
 
 # ******************************
 # utilities
-# ******************************        
+# ******************************
 
 
 
@@ -667,8 +669,8 @@ class Show(object):
         if track_file != '' and track_file[0]=="+":
             track_file=self.pp_home+track_file[1:]
         self.mon.log(self,"Track to load is: "+ track_file)
-        return track_file     
-  
+        return track_file
+
 
     def calculate_duration(self,line):
         fields=line.split(':')
@@ -688,6 +690,3 @@ class Show(object):
             return 'error','bad time: '+ line,0
         else:
             return 'normal','',3600*long(hours)+60*long(minutes)+long(secs)
-
-
-
