@@ -496,7 +496,7 @@ class RadioMediaShow(Show):
                     self.next_track_signal=False
                     self.kickback_for_next_track=False
 
-                    # play user selected track
+                    # play user selected track # HOOK !
                     self.current_track_ref=self.next_track_arg
                     print 'what next - next track signal is True so load ', self.current_track_ref
                     index = self.medialist.index_of_track(self.current_track_ref)
@@ -504,6 +504,7 @@ class RadioMediaShow(Show):
                         # don't use select the track as not using selected_track in radiobuttonshow
                         # and load it
                         Show.write_stats(self,'play',self.show_params,self.medialist.track(index))
+                        self.display_eggtimer()
                         self.start_load_show_loop(self.medialist.track(index))
                     else:
                         self.mon.err(self,"next track not found in medialist: "+ self.current_track_ref)
@@ -574,7 +575,7 @@ class RadioMediaShow(Show):
 
             # AT END OF MEDIALIST
             elif self.medialist.at_end() is True:
-                print 'MEDIALIST AT END'
+                #print 'MEDIALIST AT END'
 
                 # interval>0 and list finished so wait for the interval timer
                 if self.show_params['sequence'] == "ordered"  and self.interval > 0 and self.interval_timer_signal==False:
