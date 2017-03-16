@@ -176,7 +176,7 @@ class RadioMediaShow(Show):
             self.shower.do_operation('stop')
         elif self.current_player is not None:
             print 'current_player not none so stopping'#,self.mon.id(self.current_player), ' for' ,track_ref
-            #self.current_player.input_pressed('stop')
+            self.current_player.input_pressed('stop')
         else:
             return
 

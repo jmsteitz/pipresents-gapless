@@ -12,7 +12,7 @@ class MessagePlayer(Player):
         show shows the track,close closes the track after pause at end
         input-pressed receives user input while the track is playing.
     """
- 
+
     def __init__(self,
                  show_id,
                  showlist,
@@ -26,7 +26,7 @@ class MessagePlayer(Player):
                  end_callback,
                  command_callback):
 
-        # initialise items common to all players   
+        # initialise items common to all players
         Player.__init__( self,
                          show_id,
                          showlist,
@@ -38,7 +38,7 @@ class MessagePlayer(Player):
                          pp_home,
                          pp_profile,
                          end_callback,
-                         command_callback)                    
+                         command_callback)
 
         # stopwatch for timing functions
         StopWatch.global_enable=False
@@ -47,26 +47,26 @@ class MessagePlayer(Player):
 
         self.mon.trace(self,'')
         # and initilise things for this player
-        
+
         # get duration from profile
         if self.track_params['duration'] != "":
             self.duration= int(self.track_params['duration'])
         else:
-            self.duration= int(self.show_params['duration'])       
-        
+            self.duration= int(self.show_params['duration'])
+
         # initialise the state machine
-        self.play_state='initialised'    
-            
-            
+        self.play_state='initialised'
+
+
     # LOAD - loads the images and text
-    def load(self,text,loaded_callback,enable_menu):  
+    def load(self,text,loaded_callback,enable_menu):
         # instantiate arguments
         self.track=text
         self.loaded_callback=loaded_callback   # callback when loaded
         self.mon.trace(self,'')
 
         # do common bits of  load
-        Player.pre_load(self)   
+        Player.pre_load(self)
 
         # load the plugin, this may modify self.ttack and enable the plugin drawign to canvas
         if self.track_params['plugin'] != '':
@@ -92,26 +92,26 @@ class MessagePlayer(Player):
             if self.loaded_callback is not None:
                 self.loaded_callback('loaded','message track loaded')
 
-            
+
     # UNLOAD - abort a load when omplayer is loading or loaded
     def unload(self):
         self.mon.trace(self,'')
         # nothing to do for Messageplayer
         self.mon.log(self,">unload received from show Id: "+ str(self.show_id))
         self.play_state='unloaded'
-     
-            
 
-     # SHOW - show a track from its loaded state 
+
+
+     # SHOW - show a track from its loaded state
     def show(self,ready_callback,finished_callback,closed_callback):
-                         
+
         # instantiate arguments
-        self.ready_callback=ready_callback         # callback when ready to show an image - 
-        self.finished_callback=finished_callback         # callback when finished showing 
+        self.ready_callback=ready_callback         # callback when ready to show an image -
+        self.finished_callback=finished_callback         # callback when finished showing
         self.closed_callback=closed_callback            # callback when closed - not used by Messageplayer
 
         self.mon.trace(self,'')
-        # init state and signals  
+        # init state and signals
         self.tick = 100 # tick time for image display (milliseconds)
         self.dwell = 10*self.duration
         self.dwell_counter=0
@@ -119,12 +119,13 @@ class MessagePlayer(Player):
 
         # do common bits
         Player.pre_show(self)
-        
+
         # start show state machine
         self.start_dwell()
 
     # CLOSE - nothing to do in messageplayer - x content is removed by ready callback
     def close(self,closed_callback):
+        print 'calling close'
         self.mon.trace(self,'')
         self.closed_callback=closed_callback
         self.mon.log(self,">close received from show Id: "+ str(self.show_id))
@@ -142,10 +143,10 @@ class MessagePlayer(Player):
 
     def stop(self):
         self.quit_signal=True
-        
 
 
-        
+
+
 # ******************************************
 # Sequencing
 # ********************************************
@@ -154,10 +155,11 @@ class MessagePlayer(Player):
         self.play_state='showing'
         self.tick_timer=self.canvas.after(self.tick, self.do_dwell)
 
-        
+
     def do_dwell(self):
         if self.quit_signal  is   True:
             self.mon.log(self,"quit received")
+            print 'messageplayer received quit'
             if self.finished_callback is not None:
                 self.finished_callback('pause_at_end','user quit or duration exceeded')
                 # use finish so that the show will call close
@@ -173,9 +175,9 @@ class MessagePlayer(Player):
 
 # *****************
 # x content
-# *****************    
+# *****************
 
-    # called from Player, load_x_content       
+    # called from Player, load_x_content
     def load_track_content(self):
         # load message text
         # print 'show canvas',self.show_canvas_x1,self.show_canvas_y1,self.show_canvas_x2,self.show_canvas_y2
@@ -194,10 +196,10 @@ class MessagePlayer(Player):
                                                    text=self.track.rstrip('\n'),
                                                    fill=self.track_params['message-colour'],
                                                    font=self.track_params['message-font'],
-                                                   justify=self.track_params['message-justify'])     
+                                                   justify=self.track_params['message-justify'])
         self.canvas.itemconfig(self.track_obj,state='hidden')
         return 'normal','message loaded'
-    
+
 
     def show_track_content(self):
         self.canvas.itemconfig(self.track_obj,state='normal')
@@ -205,7 +207,3 @@ class MessagePlayer(Player):
     def hide_track_content(self):
         self.canvas.itemconfig(self.track_obj,state='hidden')
         self.canvas.delete(self.track_obj)
-
-            
- 
-    
