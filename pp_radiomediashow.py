@@ -116,9 +116,9 @@ class RadioMediaShow(Show):
     def handle_input_event_this_show(self,symbol):
         # for radiobuttonshow the symbolic names are links to play tracks, also a limited number of in-track operations
         # find the first entry in links that matches the symbol and execute its operation
-        # print 'radiobuttonshow ',symbol
+        print 'radiomediashow ', symbol
         found,link_op,link_arg=self.path.find_link(symbol,self.links)
-        # print 'input event',symbol,link_op
+        print 'input event', symbol, link_op
         if found is True:
             if link_op == 'play':
                 print 'playing ' + link_arg
