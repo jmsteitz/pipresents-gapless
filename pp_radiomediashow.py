@@ -503,8 +503,7 @@ class RadioMediaShow(Show):
                         # and load it
                         Show.write_stats(self,'play',self.show_params,self.medialist.track(index))
                         self.display_eggtimer()
-                        self.wait_for_trigger()
-                        self.enable_hint=False
+                        #self.enable_hint=False
                         self.start_load_show_loop(self.medialist.track(index))
                     else:
                         self.mon.err(self,"next track not found in medialist: "+ self.current_track_ref)
