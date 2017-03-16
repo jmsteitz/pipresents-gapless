@@ -247,7 +247,7 @@ class RadioMediaShow(Show):
         #get rid of previous track in order to display the empty message
         if self.medialist.display_length() == 0:
             Show.base_shuffle(self)
-            Show.base_track_ready_callback(self,False)
+            Show.base_track_ready_callback(self,True) # was False
             Show.display_admin_message(self,self.show_params['empty-text'])
             self.wait_for_not_empty()
         else:
