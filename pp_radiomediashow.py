@@ -629,55 +629,55 @@ class RadioMediaShow(Show):
 
     # # called just before a track is shown to remove the  previous track from the screen
     # # and if necessary close it
-    def track_ready_callback(self,enable_show_background):
-        self.delete_eggtimer()
-
-        # get control bindings for this show
-        # needs to be done for each track as track can override the show controls
-        if self.show_params['disable-controls'] == 'yes':
-            self.controls_list=[]
-        else:
-            reason,message,self.controls_list= self.controlsmanager.get_controls(self.show_params['links'])
-            if reason=='error':
-                self.mon.err(self,message)
-                self.end('error',"error in controls: " + message)
-                return
-
-            # print 'controls',reason,self.show_params['controls'],self.controls_list
-            #merge controls from the track
-            controls_text=self.current_player.get_links()
-            reason,message,track_controls=self.controlsmanager.parse_controls(controls_text)
-            if reason == 'error':
-                self.mon.err(self,message + " in track: "+ self.current_player.track_params['track-ref'])
-                self.error_signal=True
-                self.what_next_after_showing()
-            self.controlsmanager.merge_controls(self.controls_list,track_controls)
-
-        # enable the click-area that are in the list of controls
-        self.sr.enable_click_areas(self.controls_list)
-        Show.base_track_ready_callback(self,enable_show_background)
+    # def track_ready_callback(self,enable_show_background):
+    #     self.delete_eggtimer()
+    #
+    #     # get control bindings for this show
+    #     # needs to be done for each track as track can override the show controls
+    #     if self.show_params['disable-controls'] == 'yes':
+    #         self.controls_list=[]
+    #     else:
+    #         reason,message,self.controls_list= self.controlsmanager.get_controls(self.show_params['controls'])
+    #         if reason=='error':
+    #             self.mon.err(self,message)
+    #             self.end('error',"error in controls: " + message)
+    #             return
+    #
+    #         # print 'controls',reason,self.show_params['controls'],self.controls_list
+    #         #merge controls from the track
+    #         controls_text=self.current_player.get_links()
+    #         reason,message,track_controls=self.controlsmanager.parse_controls(controls_text)
+    #         if reason == 'error':
+    #             self.mon.err(self,message + " in track: "+ self.current_player.track_params['track-ref'])
+    #             self.error_signal=True
+    #             self.what_next_after_showing()
+    #         self.controlsmanager.merge_controls(self.controls_list,track_controls)
+    #
+    #     # enable the click-area that are in the list of controls
+    #     self.sr.enable_click_areas(self.controls_list)
+    #     Show.base_track_ready_callback(self,enable_show_background)
 
     # called just before a track is shown to remove the  previous track from the screen
     # and if necessary close it
-    # def track_ready_callback(self,enable_show_background):
-    #     self.delete_eggtimer()
-    #     # print 'TRACK READY CALLBACK'
-    #     # print 'previous is',self.mon.id(self.previous_player), self.next_track_signal
-    #
-    #     #merge links from the track
-    #     if self.show_params['disable-controls'] == 'yes':
-    #         track_links=[]
-    #     else:
-    #         reason,message,track_links=self.path.parse_links(self.current_player.get_links(),self.allowed_links)
-    #         if reason == 'error':
-    #             self.mon.err(self,message + " in track: "+ self.current_player.track_params['track-ref'])
-    #             self.req_next='error'
-    #             self.what_next_after_showing()
-    #     self.path.merge_links(self.links,track_links)
-    #     # enable the click-area that are in the list of links
-    #     self.sr.enable_click_areas(self.links)
-    #
-    #     Show.base_track_ready_callback(self,enable_show_background)
+    def track_ready_callback(self,enable_show_background):
+        self.delete_eggtimer()
+        # print 'TRACK READY CALLBACK'
+        # print 'previous is',self.mon.id(self.previous_player), self.next_track_signal
+
+        #merge links from the track
+        if self.show_params['disable-controls'] == 'yes':
+            track_links=[]
+        else:
+            reason,message,track_links=self.path.parse_links(self.current_player.get_links(),self.allowed_links)
+            if reason == 'error':
+                self.mon.err(self,message + " in track: "+ self.current_player.track_params['track-ref'])
+                self.req_next='error'
+                self.what_next_after_showing()
+        self.path.merge_links(self.links,track_links)
+        # enable the click-area that are in the list of links
+        self.sr.enable_click_areas(self.links)
+
+        Show.base_track_ready_callback(self,enable_show_background)
 
 
 
