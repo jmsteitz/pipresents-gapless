@@ -221,7 +221,7 @@ class PPdefinitions(object):
                              'omx-audio': 'hdmi','omx-volume':'0','omx-window':'warp 300 300 655 500','omx-other-options': '','freeze-at-end':'yes',
                              'controls':'pp-down down\npp-up up\npp-play play\npp-stop stop\npp-pause pause\n'},
 
-                'radiomediashow':{'title': 'New Radiobutton-Mediashow','show-ref':'', 'show-canvas':'', 'type': 'radiomediashow','medialist': '','show-timeout': '0','interval':'0','track-count-limit':'0',
+                'radiomediashow':{'title': 'New Radiobutton-Mediashow','show-ref':'', 'show-canvas':'', 'type': 'radiomediashow','medialist': '','links':'','show-timeout': '0','interval':'0','track-count-limit':'0',
                           'disable-controls':'no','trigger-start-type': 'start','trigger-start-param':'','trigger-next-type': 'continue','trigger-next-param':'','sequence': 'ordered','repeat': 'repeat','trigger-end-type':'none', 'trigger-end-param':'',
                             'child-track-ref': '', 'hint-text': '', 'hint-x':'200','hint-y': '750','hint-font': 'Helvetica 30 bold','hint-colour': 'white',
                              'eggtimer-text':'Loading....','eggtimer-x':'100','eggtimer-y':'100','eggtimer-font':'Helvetica 10 bold','eggtimer-colour':'white',
