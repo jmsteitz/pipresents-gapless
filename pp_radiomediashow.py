@@ -495,6 +495,20 @@ class RadioMediaShow(Show):
                 if self.next_track_signal is True or self.subshow_kickback_signal is False:
                     self.next_track_signal=False
                     self.kickback_for_next_track=False
+
+                    # play user selected track
+                    print 'what next - next track signal is True so load ', self.current_track_ref
+                    index = self.medialist.index_of_track(self.current_track_ref)
+                    if index >=0:
+                        # don't use select the track as not using selected_track in radiobuttonshow
+                        # and load it
+                        Show.write_stats(self,'play',self.show_params,self.medialist.track(index))
+                        self.start_load_show_loop(self.medialist.track(index))
+                    else:
+                        self.mon.err(self,"next track not found in medialist: "+ self.current_track_ref)
+                        self.end('error',"next track not found in medialist: "+ self.current_track_ref)
+
+
                     if self.medialist.at_end() is True:
                         # medialist_at_end can give false positive for shuffle
                         if  self.show_params['sequence'] == "ordered" and self.show_params['repeat'] == 'repeat':
