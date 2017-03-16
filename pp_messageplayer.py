@@ -125,7 +125,6 @@ class MessagePlayer(Player):
 
     # CLOSE - nothing to do in messageplayer - x content is removed by ready callback
     def close(self,closed_callback):
-        print 'calling close'
         self.mon.trace(self,'')
         self.closed_callback=closed_callback
         self.mon.log(self,">close received from show Id: "+ str(self.show_id))
@@ -159,7 +158,6 @@ class MessagePlayer(Player):
     def do_dwell(self):
         if self.quit_signal  is   True:
             self.mon.log(self,"quit received")
-            print 'messageplayer received quit'
             if self.finished_callback is not None:
                 self.finished_callback('pause_at_end','user quit or duration exceeded')
                 # use finish so that the show will call close

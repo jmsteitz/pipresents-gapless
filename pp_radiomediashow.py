@@ -109,21 +109,18 @@ class RadioMediaShow(Show):
 
     # respond to inputs
     def handle_input_event(self,symbol):
-        print symbol
         Show.base_handle_input_event(self,symbol)
         #self.handle_input_event_this_show(symbol)
 
     def handle_input_event_this_show(self,symbol):
         # for radiobuttonshow the symbolic names are links to play tracks, also a limited number of in-track operations
         # find the first entry in links that matches the symbol and execute its operation
-        print 'radiomediashow ', symbol
-        print self.links
+        #print 'radiomediashow ', symbol
         found,link_op,link_arg=self.path.find_link(symbol,self.links)
-        print 'input event', symbol, link_op
-        print 'found ', found
+        #print 'input event', symbol, link_op
         if found is True:
             if link_op == 'play':
-                print 'playing ' + link_arg
+                #print 'playing ' + link_arg
                 self.do_play(link_arg)
 
             elif link_op == 'exit':
@@ -160,11 +157,10 @@ class RadioMediaShow(Show):
                 self.end('error',"unknown link command: "+ link_op)
 
     def do_play(self,track_ref):
-        print 'do_play ' + track_ref
+        #print 'do_play ' + track_ref
         # if track_ref != self.current_track_ref:
         # cancel the show timeout when playing another track
         if self.show_timeout_timer is not None:
-            print 'cancel show timeout'
             self.canvas.after_cancel(self.show_timeout_timer)
             self.show_timeout_timer=None
         # print '\n NEED NEXT TRACK'
@@ -173,10 +169,10 @@ class RadioMediaShow(Show):
         self.next_track_arg=track_ref
         self.play_child_signal=True
         if self.shower is not None:
-            print 'current_shower not none so stopping'#,self.mon.id(self.current_shower)
+            #print 'current_shower not none so stopping',self.mon.id(self.current_shower)
             self.shower.do_operation('stop')
         elif self.current_player is not None:
-            print 'current_player not none so stopping'#,self.mon.id(self.current_player), ' for' ,track_ref
+            #print 'current_player not none so stopping',self.mon.id(self.current_player), ' for' ,track_ref
             self.current_player.input_pressed('stop')
         else:
             return
@@ -248,7 +244,7 @@ class RadioMediaShow(Show):
         #get rid of previous track in order to display the empty message
         if self.medialist.display_length() == 0:
             Show.base_shuffle(self)
-            Show.base_track_ready_callback(self,False) # was False
+            Show.base_track_ready_callback(self,False)
             Show.display_admin_message(self,self.show_params['empty-text'])
             self.wait_for_not_empty()
         else:
@@ -472,7 +468,6 @@ class RadioMediaShow(Show):
 
             # user wants to play child
             elif self.play_child_signal is True:
-                print 'playing child'
                 self.play_child_signal=False
                 # index = self.medialist.index_of_track(self.child_track_ref)
                 # if index >=0:
@@ -489,7 +484,7 @@ class RadioMediaShow(Show):
 
                 # play user selected track # HOOK !
                 self.current_track_ref=self.next_track_arg
-                print 'what next - next track signal is True so load ', self.current_track_ref
+                #print 'what next - next track signal is True so load ', self.current_track_ref
                 index = self.medialist.index_of_track(self.current_track_ref)
                 if index >=0:
                     # don't use select the track as not using selected_track in radiobuttonshow
@@ -508,7 +503,7 @@ class RadioMediaShow(Show):
 
             # skip to next track on user input or after subshow
             elif self.next_track_signal is True:
-                print 'skip forward test' ,self.subshow_kickback_signal
+                #print 'skip forward test' ,self.subshow_kickback_signal
                 if self.next_track_signal is True or self.subshow_kickback_signal is False:
                     self.next_track_signal=False
                     self.kickback_for_next_track=False
@@ -543,7 +538,7 @@ class RadioMediaShow(Show):
 
             # skip to previous track on user input or after subshow
             elif self.previous_track_signal is True or self.subshow_kickback_signal is True:
-                print 'skip backward test, subshow kickback is' ,self.subshow_kickback_signal
+                #print 'skip backward test, subshow kickback is' ,self.subshow_kickback_signal
                 self.subshow_kickback_signal=False
                 self.previous_track_signal=False
                 self.kickback_for_next_track=True
@@ -586,7 +581,7 @@ class RadioMediaShow(Show):
                     self.waiting_for_interval=True
                     # print 'WAITING FOR INTERVAL'
                     Show.base_shuffle(self)
-                    Show.base_track_ready_callback(self,False) # was False
+                    Show.base_track_ready_callback(self,False)
                     self.poll_for_interval_timer=self.canvas.after(200,self.what_next_after_showing)
 
                 # interval=0

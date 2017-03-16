@@ -508,10 +508,8 @@ class Show(object):
         self.mon.log(self, self.show_params['show-ref']+ ' Show Id: '+ str(self.show_id)+": received input event: " + symbol)
 
         if self.shower is not None:
-            print 'shower handles input event'
             self.shower.handle_input_event(symbol)
         else:
-            print 'show handles input event'
             self.handle_input_event_this_show(symbol)
 
     #dummy must be overridden in derived class
