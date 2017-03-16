@@ -172,12 +172,10 @@ class RadioMediaShow(Show):
         self.next_track_op='play'
         self.next_track_arg=track_ref
         if self.shower is not None:
-            print 'stop current shower'
-            # print 'current_shower not none so stopping',self.mon.id(self.current_shower)
+            print 'current_shower not none so stopping',self.mon.id(self.current_shower)
             self.shower.do_operation('stop')
         elif self.current_player is not None:
-            print 'stop current player'
-            # print 'current_player not none so stopping',self.mon.id(self.current_player), ' for' ,track_ref
+            print 'current_player not none so stopping',self.mon.id(self.current_player), ' for' ,track_ref
             self.current_player.input_pressed('stop')
         else:
             return
