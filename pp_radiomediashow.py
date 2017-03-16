@@ -119,6 +119,7 @@ class RadioMediaShow(Show):
         print 'radiomediashow ', symbol
         found,link_op,link_arg=self.path.find_link(symbol,self.links)
         print 'input event', symbol, link_op
+        print 'found ', found
         if found is True:
             if link_op == 'play':
                 print 'playing ' + link_arg
