@@ -294,7 +294,15 @@ class RadioMediaShow(Show):
         else:
             self.enable_child=False
 
-
+        # read the show links. Track links will  be added by ready_callback
+        # needs to be done in show loop as each track adds different links to the show links
+        if self.show_params['disable-controls'] == 'yes':
+            self.links=[]
+        else:
+            reason,message,self.links=self.path.parse_links(self.show_params['links'],self.allowed_links)
+            if reason == 'error':
+                self.mon.err(self,message + " in show")
+                self.end('error',message + " in show")
 
         # load the track or show
         # params - track,enable_menu
