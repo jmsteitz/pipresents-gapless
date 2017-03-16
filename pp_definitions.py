@@ -86,8 +86,8 @@ class PPdefinitions(object):
                 'audio-speaker','mplayer-audio','mplayer-volume','mplayer-other-options','sep',
                 'omx-audio','omx-volume','omx-window','freeze-at-end','omx-other-options','sep',
                 'web-window',
-            'tab-controls','sep',
-                    'disable-controls', 'controls'
+            'tab-links','sep',
+                'disable-controls','links'
             ],
 
         'menu':[
