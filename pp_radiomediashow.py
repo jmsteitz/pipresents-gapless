@@ -497,6 +497,7 @@ class RadioMediaShow(Show):
                     self.kickback_for_next_track=False
 
                     # play user selected track
+                    self.current_track_ref=self.next_track_arg
                     print 'what next - next track signal is True so load ', self.current_track_ref
                     index = self.medialist.index_of_track(self.current_track_ref)
                     if index >=0:
