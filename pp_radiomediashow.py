@@ -168,9 +168,10 @@ class RadioMediaShow(Show):
             self.canvas.after_cancel(self.show_timeout_timer)
             self.show_timeout_timer=None
         # print '\n NEED NEXT TRACK'
-        self.next_track_signal=True
+        #self.next_track_signal=True
         self.next_track_op='play'
         self.next_track_arg=track_ref
+        self.play_child_signal=True
         if self.shower is not None:
             print 'current_shower not none so stopping'#,self.mon.id(self.current_shower)
             self.shower.do_operation('stop')
@@ -471,19 +472,37 @@ class RadioMediaShow(Show):
 
             # user wants to play child
             elif self.play_child_signal is True:
+                print 'playing child'
                 self.play_child_signal=False
-                index = self.medialist.index_of_track(self.child_track_ref)
+                # index = self.medialist.index_of_track(self.child_track_ref)
+                # if index >=0:
+                #     # don't use select the track as need to preserve mediashow sequence for returning from child
+                #     child_track=self.medialist.track(index)
+                #     Show.write_stats(self,'play child',self.show_params,child_track)
+                #     self.display_eggtimer()
+                #     self.enable_hint=False
+                #     self.start_load_show_loop(child_track)
+                # else:
+                #     self.mon.err(self,"Child not found in medialist: "+ self.child_track_ref)
+                #     self.ending_reason='error'
+                #     Show.base_close_or_unload(self)
+
+                # play user selected track # HOOK !
+                self.current_track_ref=self.next_track_arg
+                print 'what next - next track signal is True so load ', self.current_track_ref
+                index = self.medialist.index_of_track(self.current_track_ref)
                 if index >=0:
-                    # don't use select the track as need to preserve mediashow sequence for returning from child
-                    child_track=self.medialist.track(index)
-                    Show.write_stats(self,'play child',self.show_params,child_track)
+                    # don't use select the track as not using selected_track in radiobuttonshow
+                    # and load it
+                    Show.write_stats(self,'play',self.show_params,self.medialist.track(index))
                     self.display_eggtimer()
                     self.enable_hint=False
-                    self.start_load_show_loop(child_track)
+                    self.start_load_show_loop(self.medialist.track(index))
                 else:
-                    self.mon.err(self,"Child not found in medialist: "+ self.child_track_ref)
-                    self.ending_reason='error'
+                    self.mon.err(self,"next track not found in medialist: "+ self.current_track_ref)
+                    self.end('error',"next track not found in medialist: "+ self.current_track_ref)
                     Show.base_close_or_unload(self)
+
 
 
 
@@ -494,20 +513,6 @@ class RadioMediaShow(Show):
                     self.next_track_signal=False
                     self.kickback_for_next_track=False
 
-                    # play user selected track # HOOK !
-                    self.current_track_ref=self.next_track_arg
-                    print 'what next - next track signal is True so load ', self.current_track_ref
-                    index = self.medialist.index_of_track(self.current_track_ref)
-                    if index >=0:
-                        # don't use select the track as not using selected_track in radiobuttonshow
-                        # and load it
-                        Show.write_stats(self,'play',self.show_params,self.medialist.track(index))
-                        self.display_eggtimer()
-                        #self.enable_hint=False
-                        self.start_load_show_loop(self.medialist.track(index))
-                    else:
-                        self.mon.err(self,"next track not found in medialist: "+ self.current_track_ref)
-                        self.end('error',"next track not found in medialist: "+ self.current_track_ref)
 
 
                     if self.medialist.at_end() is True:
