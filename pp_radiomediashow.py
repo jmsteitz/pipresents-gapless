@@ -121,6 +121,7 @@ class RadioMediaShow(Show):
         # print 'input event',symbol,link_op
         if found is True:
             if link_op == 'play':
+                print 'playing ' + link_arg
                 self.do_play(link_arg)
 
             elif link_op == 'exit':
