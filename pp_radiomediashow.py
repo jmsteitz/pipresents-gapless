@@ -491,7 +491,7 @@ class RadioMediaShow(Show):
 
             # skip to next track on user input or after subshow
             elif self.next_track_signal is True:
-                # print 'skip forward test' ,self.subshow_kickback_signal
+                print 'skip forward test' ,self.subshow_kickback_signal
                 if self.next_track_signal is True or self.subshow_kickback_signal is False:
                     self.next_track_signal=False
                     self.kickback_for_next_track=False
@@ -523,7 +523,7 @@ class RadioMediaShow(Show):
 
             # skip to previous track on user input or after subshow
             elif self.previous_track_signal is True or self.subshow_kickback_signal is True:
-                # print 'skip backward test, subshow kickback is' ,self.subshow_kickback_signal
+                print 'skip backward test, subshow kickback is' ,self.subshow_kickback_signal
                 self.subshow_kickback_signal=False
                 self.previous_track_signal=False
                 self.kickback_for_next_track=True
@@ -559,7 +559,7 @@ class RadioMediaShow(Show):
 
             # AT END OF MEDIALIST
             elif self.medialist.at_end() is True:
-                # print 'MEDIALIST AT END'
+                print 'MEDIALIST AT END'
 
                 # interval>0 and list finished so wait for the interval timer
                 if self.show_params['sequence'] == "ordered"  and self.interval > 0 and self.interval_timer_signal==False:
