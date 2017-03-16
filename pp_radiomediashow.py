@@ -637,12 +637,12 @@ class RadioMediaShow(Show):
         if self.show_params['disable-controls'] == 'yes':
             self.controls_list=[]
         else:
-            reason,message,self.controls_list= self.controlsmanager.get_controls(self.show_params['controls'])
+            reason,message,self.controls_list= self.controlsmanager.get_controls(self.show_params['links'])
             if reason=='error':
                 self.mon.err(self,message)
                 self.end('error',"error in controls: " + message)
                 return
-    
+
             # print 'controls',reason,self.show_params['controls'],self.controls_list
             #merge controls from the track
             controls_text=self.current_player.get_links()
